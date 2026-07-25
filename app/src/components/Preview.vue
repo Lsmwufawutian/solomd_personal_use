@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import mermaid from 'mermaid';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { renderMarkdown, extractImageRoot } from '../lib/markdown';
+import { plantumlSvgUrl } from '../lib/plantuml';
 import { installSvgImageFallbacks, rewriteImageUrls } from '../lib/image-resolve';
 import { openImageOverlay, type OverlayStrings } from '../lib/image-overlay';
 import { svgToPngBlob, diagramBackground } from '../lib/mermaid-export';
@@ -143,6 +144,37 @@ const html = computed(() => {
   const source = props.source || '';
   return rewriteImageUrls(renderMarkdown(source), extractImageRoot(source), props.filePath);
 });
+
+// v4.10 issue #163 — render ```plantuml fences through the configured
+// PlantUML server. Opt-in (`plantumlEnabled`); when off the fence stays a
+// plain code block. Display is an <img> (no fetch → no CORS); onerror keeps
+// the source visible with a hint instead of a broken image.
+function processPlantuml() {
+  if (!host.value) return;
+  if (!settings.plantumlEnabled || !settings.plantumlServer) return;
+  const blocks = host.value.querySelectorAll(
+    'pre > code.language-plantuml, pre > code.language-puml',
+  );
+  for (const block of Array.from(blocks)) {
+    const pre = block.parentElement as HTMLElement | null;
+    if (!pre || pre.dataset.rendered === '1') continue;
+    const code = (block.textContent || '').trim();
+    const wrap = document.createElement('div');
+    wrap.className = 'plantuml-block';
+    const img = document.createElement('img');
+    img.alt = 'PlantUML diagram';
+    img.loading = 'lazy';
+    img.src = plantumlSvgUrl(settings.plantumlServer, code);
+    img.addEventListener('error', () => {
+      const err = document.createElement('pre');
+      err.className = 'plantuml-error';
+      err.textContent = `PlantUML render failed (${settings.plantumlServer})\n\n${code}`;
+      wrap.replaceWith(err);
+    });
+    wrap.appendChild(img);
+    pre.replaceWith(wrap);
+  }
+}
 
 async function processMermaid() {
   if (!host.value) return;
@@ -348,10 +380,28 @@ watch(html, async () => {
   // A re-render (incl. our own math write-back) invalidates popup geometry.
   mathEdit.value = null;
   await nextTick();
+  processPlantuml();
   await processMermaid();
   await processWhiteboards();
   attachImageOverlayHandlers();
 });
+
+// Toggling PlantUML (or changing the server) must re-render: the markdown
+// HTML string itself is unchanged (PlantUML swaps happen post-render), so
+// v-html would not reset the DOM on its own. Rebuild from html and re-run
+// the processors.
+watch(
+  () => [settings.plantumlEnabled, settings.plantumlServer],
+  async () => {
+    if (!host.value) return;
+    host.value.innerHTML = html.value;
+    await nextTick();
+    processPlantuml();
+    await processMermaid();
+    await processWhiteboards();
+    attachImageOverlayHandlers();
+  },
+);
 
 /**
  * Intercept all link clicks inside the preview pane and open them in the
@@ -433,6 +483,7 @@ function resolveRelativePath(basePath: string, href: string): string {
 
 onMounted(async () => {
   await nextTick();
+  processPlantuml();
   await processMermaid();
   await processWhiteboards();
   attachImageOverlayHandlers();
@@ -505,6 +556,7 @@ defineExpose({ scrollToLine, openSearch });
         'preview-content--reading': skin === 'reading',
         'cb-numbered-on': settings.codeBlockLineNumbers,
       }"
+      :style="{ '--preview-max-width': `${settings.previewMaxWidth || 760}px` }"
       v-html="html"
     ></article>
 
@@ -551,7 +603,9 @@ defineExpose({ scrollToLine, openSearch });
   border-left: 1px solid var(--border);
 }
 :where(.preview-content) {
-  max-width: 760px;
+  /* v4.10 #165 — column width is user-tunable (previewMaxWidth setting sets
+     the var on the article); 760px was the old hardcoded value. */
+  max-width: var(--preview-max-width, 760px);
   margin: 0 auto;
   padding: 28px 36px 64px;
   color: var(--text);
@@ -692,6 +746,21 @@ defineExpose({ scrollToLine, openSearch });
   cursor: zoom-in;
   transition: opacity 0.15s;
 }
+/* v4.10 #163 — PlantUML server-rendered diagrams. */
+:where(.preview-content) .plantuml-block {
+  display: flex;
+  justify-content: center;
+  margin: 1.5em 0;
+}
+:where(.preview-content) .plantuml-block img {
+  max-width: 100%;
+  height: auto;
+}
+:where(.preview-content) .plantuml-error {
+  color: var(--text-muted);
+  border-left: 3px solid var(--accent);
+  white-space: pre-wrap;
+}
 :where(.preview-content) .mermaid-block:hover {
   opacity: 0.85;
 }
@@ -801,7 +870,9 @@ defineExpose({ scrollToLine, openSearch });
     "Noto Serif",
     Georgia,
     serif;
-  max-width: 720px;
+  /* v4.10 #165 — reading column follows the same width setting as the
+     preview pane (720px was the old hardcoded serif column). */
+  max-width: var(--preview-max-width, 720px);
   margin: 0 auto;
   padding: 64px 32px 96px;
   font-family: var(--font-reading);

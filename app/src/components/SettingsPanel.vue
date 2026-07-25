@@ -438,6 +438,20 @@ function onSelectPdfFont(v: string) {
         </section>
 
         <section data-cat="basics">
+          <label>{{ t('settings.previewMaxWidth') }}: {{ settings.previewMaxWidth }}px</label>
+          <input
+            type="range"
+            min="480"
+            max="1600"
+            step="20"
+            :value="settings.previewMaxWidth"
+            :disabled="settings.previewFitWidth"
+            @input="settings.setPreviewMaxWidth(+($event.target as HTMLInputElement).value)"
+          />
+          <p class="setting-hint">{{ t('settings.previewMaxWidthHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
           <label>
             <input type="checkbox" :checked="settings.limitEditorWidth" @change="settings.toggleLimitEditorWidth()" />
             {{ t('settings.limitEditorWidth') || 'Limit editor width (readable column)' }}
@@ -466,6 +480,27 @@ function onSelectPdfFont(v: string) {
             {{ t('settings.markdownHardBreaks') }}
           </label>
           <p class="setting-hint">{{ t('settings.markdownHardBreaksHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input
+              type="checkbox"
+              :checked="settings.plantumlEnabled"
+              @change="settings.togglePlantuml()"
+            />
+            {{ t('settings.plantuml') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.plantumlHint') }}</p>
+          <input
+            v-if="settings.plantumlEnabled"
+            type="text"
+            :value="settings.plantumlServer"
+            :placeholder="'https://www.plantuml.com/plantuml'"
+            spellcheck="false"
+            style="margin-top: 6px; width: 100%"
+            @change="settings.setPlantumlServer(($event.target as HTMLInputElement).value)"
+          />
         </section>
 
         <section data-cat="basics">

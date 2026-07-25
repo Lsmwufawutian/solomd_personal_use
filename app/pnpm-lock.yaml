@@ -104,6 +104,9 @@ importers:
       docx:
         specifier: ^9.6.1
         version: 9.6.1
+      fflate:
+        specifier: 0.8.2
+        version: 0.8.2
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1

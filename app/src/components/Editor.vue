@@ -56,6 +56,7 @@ import {
   clearSession,
 } from '../lib/cm-session-restore';
 import { renderMarkdown, extractImageRoot as extractMarkdownImageRoot } from '../lib/markdown';
+import { plantumlSvgUrl } from '../lib/plantuml';
 import { installSvgImageFallbacks, rewriteImageUrls } from '../lib/image-resolve';
 import { SLASH_BLOCKS, filterBlocks, expandSnippet } from '../lib/slash-blocks';
 import { useWorkspaceIndexStore } from '../stores/workspaceIndex';
@@ -366,6 +367,30 @@ async function processPlainLiveRenderedBlocks() {
   await nextTick();
   const hostEl = plainLiveHost.value;
   installSvgImageFallbacks(hostEl);
+
+  // v4.10 #163 — PlantUML fences (opt-in), same <img> swap as the preview pane.
+  if (settings.plantumlEnabled && settings.plantumlServer) {
+    const pumlBlocks = hostEl.querySelectorAll(
+      '.plain-block__render pre > code.language-plantuml, .plain-block__render pre > code.language-puml',
+    );
+    for (const block of Array.from(pumlBlocks)) {
+      const pre = block.parentElement as HTMLElement | null;
+      if (!pre || pre.dataset.rendered === '1') continue;
+      pre.dataset.rendered = '1';
+      const code = (block.textContent || '').trim();
+      const wrap = document.createElement('div');
+      wrap.className = 'plain-plantuml-block';
+      const img = document.createElement('img');
+      img.alt = 'PlantUML diagram';
+      img.src = plantumlSvgUrl(settings.plantumlServer, code);
+      img.addEventListener('error', () => {
+        wrap.classList.add('plain-block__broken');
+        wrap.textContent = `PlantUML render failed (${settings.plantumlServer})`;
+      });
+      wrap.appendChild(img);
+      pre.replaceWith(wrap);
+    }
+  }
 
   const mermaidBlocks = hostEl.querySelectorAll('.plain-block__render pre > code.language-mermaid');
   for (const block of Array.from(mermaidBlocks)) {
@@ -1753,6 +1778,10 @@ function richExtensionsFor(tab: Tab) {
           locale: settings.language || 'en',
         }),
         getTabId: () => tab.id,
+        getPlantuml: () => ({
+          enabled: settings.plantumlEnabled,
+          server: settings.plantumlServer,
+        }),
         getBoardStrings: () => ({
           loading: t('whiteboard.loading'),
           openFull: t('whiteboard.openFull'),
@@ -2135,6 +2164,18 @@ watch(
   () => settings.showLineNumbers,
   (s) => {
     view?.dispatch({ effects: lineNumCompartment.reconfigure(s ? lineNumbers() : []) });
+  }
+);
+
+// v4.10 #163 — the live-blocks field only rebuilds on doc/selection changes,
+// so nudge it when the PlantUML toggle/server flips (same event the async
+// Mermaid render uses).
+watch(
+  [() => settings.plantumlEnabled, () => settings.plantumlServer],
+  () => {
+    try {
+      window.dispatchEvent(new CustomEvent('solomd:cm-relayout'));
+    } catch {}
   }
 );
 
@@ -2907,12 +2948,14 @@ const cls = computed(() => ({
   text-align: center;
 }
 .plain-block__render :deep(.plain-mermaid-block),
+.plain-block__render :deep(.plain-plantuml-block),
 .plain-block__render :deep(.plain-whiteboard-block) {
   margin: 1em 0;
   max-width: 100%;
   overflow: auto;
 }
 .plain-block__render :deep(.plain-mermaid-block svg),
+.plain-block__render :deep(.plain-plantuml-block img),
 .plain-block__render :deep(.plain-whiteboard-block svg) {
   max-width: 100%;
   height: auto;

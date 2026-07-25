@@ -44,6 +44,7 @@ import {
   resolveImageSrc,
 } from './image-resolve';
 import { renderMarkdown, extractImageRoot } from './markdown';
+import { plantumlSvgUrl } from './plantuml';
 import mermaid from 'mermaid';
 import 'katex/contrib/mhchem';
 import katex from 'katex';
@@ -326,6 +327,50 @@ class MermaidWidget extends WidgetType {
   }
 }
 
+// v4.10 issue #163 — ```plantuml fence rendered via the configured PlantUML
+// server (opt-in; see lib/plantuml.ts for the privacy story). Same reveal
+// model as mermaid/tables: cursor inside → source. The <img> reports its
+// final size only after load, so onload nudges the relayout plugin to make
+// CM re-measure the block height.
+class PlantumlWidget extends WidgetType {
+  constructor(
+    readonly source: string,
+    readonly url: string,
+  ) {
+    super();
+  }
+
+  eq(other: PlantumlWidget): boolean {
+    return other.source === this.source && other.url === this.url;
+  }
+
+  toDOM(): HTMLElement {
+    const wrap = document.createElement('div');
+    wrap.className = 'cm-live-block cm-live-block--plantuml';
+    const img = document.createElement('img');
+    img.alt = 'PlantUML diagram';
+    img.src = this.url;
+    img.addEventListener('load', () => {
+      try {
+        window.dispatchEvent(new CustomEvent('solomd:cm-relayout'));
+      } catch {}
+    });
+    img.addEventListener('error', () => {
+      wrap.classList.add('cm-live-block--broken');
+      wrap.textContent = 'PlantUML render failed — check the server setting';
+      try {
+        window.dispatchEvent(new CustomEvent('solomd:cm-relayout'));
+      } catch {}
+    });
+    wrap.appendChild(img);
+    return wrap;
+  }
+
+  ignoreEvent(): boolean {
+    return false;
+  }
+}
+
 // v4.6 F7 — ```tldraw fenced whiteboard. Unlike mermaid (which collapses only
 // when the cursor leaves), the board ALWAYS replaces the fence: the JSON is
 // never meant to be hand-edited. The widget mounts a LIVE tldraw editor via the
@@ -515,6 +560,8 @@ interface BlockOptions {
    * English fallbacks are used when absent so the widget never shows a raw key.
    */
   getBoardStrings?: () => { loading: string; openFull: string; loadFailed: string };
+  /** v4.10 #163 — PlantUML opt-in + server; absent/disabled → fences stay source. */
+  getPlantuml?: () => { enabled: boolean; server: string };
 }
 
 function buildBlockDecorations(state: EditorState, opts: BlockOptions): DecorationSet {
@@ -685,6 +732,43 @@ function buildBlockDecorations(state: EditorState, opts: BlockOptions): Decorati
                   blockTo,
                   Decoration.replace({
                     widget: new MermaidWidget(body),
+                    block: true,
+                  }),
+                );
+              }
+              i = endI + 1;
+              continue;
+            }
+          }
+
+          // v4.10 issue #163 — ```plantuml / ```puml fence (opt-in).
+          const plantumlCfg = opts.getPlantuml?.();
+          if (
+            plantumlCfg?.enabled &&
+            plantumlCfg.server &&
+            /^\s*```\s*(plantuml|puml)\s*$/i.test(line.text)
+          ) {
+            let endI = i + 1;
+            while (endI <= lastLine) {
+              const next = doc.line(endI);
+              if (/^\s*```\s*$/.test(next.text)) break;
+              endI += 1;
+            }
+            if (endI <= lastLine) {
+              const cursorInside = cursorLine >= i && cursorLine <= endI;
+              const cursorInsideEnd = cursorLineEnd >= i && cursorLineEnd <= endI;
+              if (!cursorInside && !cursorInsideEnd) {
+                let body = '';
+                for (let k = i + 1; k < endI; k++) {
+                  body += (k > i + 1 ? '\n' : '') + doc.line(k).text;
+                }
+                const blockFrom = doc.line(i).from;
+                const blockTo = doc.line(endI).to;
+                builder.add(
+                  blockFrom,
+                  blockTo,
+                  Decoration.replace({
+                    widget: new PlantumlWidget(body, plantumlSvgUrl(plantumlCfg.server, body)),
                     block: true,
                   }),
                 );
@@ -900,6 +984,15 @@ export const liveBlocksTheme = EditorView.theme({
     textAlign: 'center',
   },
   '.cm-live-block--mermaid svg': {
+    maxWidth: '100%',
+    height: 'auto',
+  },
+  // v4.10 #163
+  '.cm-live-block--plantuml': {
+    padding: '1.2em 0',
+    textAlign: 'center',
+  },
+  '.cm-live-block--plantuml img': {
     maxWidth: '100%',
     height: 'auto',
   },

@@ -78,6 +78,16 @@ interface Settings {
   autoCheckUpdate: boolean;
   // Preview layout
   previewFitWidth: boolean;
+  /** v4.10 issue #165 — preview/reading content column width in px (was a
+   *  hardcoded 760px). Clamped 480–1600; `previewFitWidth` still overrides
+   *  to full-bleed when on. */
+  previewMaxWidth: number;
+  /** v4.10 issue #163 — PlantUML fences render via a PlantUML server (the
+   *  diagram SOURCE is sent to it, so this is opt-in and off by default to
+   *  honor local-first; point `plantumlServer` at a self-hosted instance to
+   *  keep everything on your network). */
+  plantumlEnabled: boolean;
+  plantumlServer: string;
   // #109 — constrain the editor pane to a centered readable column instead of
   // letting long lines stretch the full window width.
   limitEditorWidth: boolean;
@@ -426,6 +436,9 @@ function defaults(): Settings {
       } catch { return 'en'; }
     })() as 'en' | 'zh' | 'ja' | 'ko' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'pl' | 'nl' | 'tr' | 'sv' | 'uk',
     previewFitWidth: false,
+    previewMaxWidth: 760,
+    plantumlEnabled: false,
+    plantumlServer: 'https://www.plantuml.com/plantuml',
     limitEditorWidth: false,
     customCssPath: '',
     telemetryEnabled: true,
@@ -688,6 +701,18 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleWordWrap() {
       this.wordWrap = !this.wordWrap;
+      this.persist();
+    },
+    setPreviewMaxWidth(n: number) {
+      this.previewMaxWidth = Math.max(480, Math.min(1600, Math.round(n)));
+      this.persist();
+    },
+    togglePlantuml() {
+      this.plantumlEnabled = !this.plantumlEnabled;
+      this.persist();
+    },
+    setPlantumlServer(s: string) {
+      this.plantumlServer = s.trim();
       this.persist();
     },
     toggleLineNumbers() {
