@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.9.6';
+const VERSION = '4.10.0';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.10</span>
+          <time>July 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.10 — PlantUML + a preview width slider.</h2>
+        <ul>
+          <li><strong>PlantUML diagrams (opt-in).</strong> <code>```plantuml</code> fences render as diagrams in the preview and in live edit, through a configurable PlantUML server. Off by default — your notes never leave the machine unless you turn it on; point it at a self-hosted server to keep rendering on your own network.</li>
+          <li><strong>Preview width is yours.</strong> The preview / reading column width is now a slider (480–1600px, was a fixed 760px). "Fit width" still stretches to the window.</li>
+          <li><strong>Tables no longer trap the caret.</strong> In live edit, ↑/↓ used to teleport clear over rendered tables — and could skip whole paragraphs below them. The caret now walks every line, steps into a table (or math / Mermaid block) to edit its source, and the block re-renders when you leave.</li>
+          <li><strong>Code-block line numbers, fixed.</strong> Numbered code blocks no longer double their line spacing, C-style <code>/** */</code> comments no longer swallow the rest of the block into row 1, and the WYSIWYG editor now honors the same line-number setting as the preview.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

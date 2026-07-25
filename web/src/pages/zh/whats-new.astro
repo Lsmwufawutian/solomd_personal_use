@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.9.6';
+const VERSION = '4.10.0';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.10</span>
+          <time>2026 年 7 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.10 —— PlantUML + 预览宽度可调。</h2>
+        <ul>
+          <li><strong>PlantUML 图表（可选开启）。</strong><code>```plantuml</code> 代码块在预览和实时编辑中渲染成图表，走可配置的 PlantUML 服务器。默认关闭——不开启时笔记内容绝不出本机；填自建服务器地址即可让渲染完全留在自己的内网。</li>
+          <li><strong>预览宽度由你定。</strong>预览/阅读模式的内容栏宽度改为滑杆设置（480–1600px,原先固定 760px）。「自适应宽度」仍可一键铺满。</li>
+          <li><strong>表格不再卡光标。</strong>实时编辑里 ↑/↓ 之前会整个跳过渲染的表格,甚至掠过表格下方的整段文字。现在光标逐行移动,走到表格（以及公式 / Mermaid 块）边缘会进入源码编辑,离开后重新渲染。</li>
+          <li><strong>代码块行号修复。</strong>开行号后行距翻倍的问题修复;C 风格 <code>/** */</code> 多行注释把整块吞进第一行的问题修复;所见即所得模式现在与预览遵循同一个行号设置。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
