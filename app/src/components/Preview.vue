@@ -623,12 +623,19 @@ defineExpose({ scrollToLine, openSearch });
 }
 .preview-content.cb-numbered-on pre.cb-numbered code {
   display: block;
+  /* #164 — the markup keeps a literal '\n' between the block-level .cb-line
+   * spans (needed for the inline, non-numbered flow). Under `pre` whitespace
+   * each of those newlines renders an EMPTY line box, doubling the apparent
+   * line spacing. Collapse them here; each .cb-line restores `pre` for its
+   * own content so indentation survives. */
+  white-space: normal;
 }
 .preview-content.cb-numbered-on pre.cb-numbered code .cb-line {
   counter-increment: cb-line;
   display: block;
   padding-left: 3.4em;
   position: relative;
+  white-space: pre;
 }
 .preview-content.cb-numbered-on pre.cb-numbered code .cb-line::before {
   content: counter(cb-line);

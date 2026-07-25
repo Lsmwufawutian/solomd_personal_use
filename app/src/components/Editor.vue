@@ -2415,7 +2415,16 @@ const cls = computed(() => ({
 <template>
   <div v-if="!usePlainWindowsEditor" :class="cls" ref="host"></div>
   <div v-else class="plain-host">
-    <div v-if="plainLiveEnabled" ref="plainLiveHost" :class="[cls, 'plain-block-editor']" :style="plainEditorStyle">
+    <div
+      v-if="plainLiveEnabled"
+      ref="plainLiveHost"
+      :class="[
+        cls,
+        'plain-block-editor',
+        { 'plain-block-editor--cb-numbers': settings.codeBlockLineNumbers },
+      ]"
+      :style="plainEditorStyle"
+    >
       <div
         v-for="(block, index) in plainBlocks"
         :key="block.id"
@@ -2828,6 +2837,35 @@ const cls = computed(() => ({
   display: block;
   background: transparent;
   padding: 0;
+}
+/* #164 — live-edit blocks honor the same `codeBlockLineNumbers` setting as
+ * the preview pane (markdown.ts always emits the .cb-line wrappers; this is
+ * the same pure-CSS activation Preview.vue uses, incl. the newline-collapse
+ * that keeps line spacing single). */
+.plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered) {
+  counter-reset: cb-line;
+}
+.plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered code) {
+  white-space: normal;
+}
+.plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered code .cb-line) {
+  counter-increment: cb-line;
+  display: block;
+  padding-left: 3.4em;
+  position: relative;
+  white-space: pre;
+}
+.plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered code .cb-line::before) {
+  content: counter(cb-line);
+  position: absolute;
+  left: 0;
+  width: 2.6em;
+  padding-right: 0.6em;
+  text-align: right;
+  color: var(--text-faint);
+  border-right: 1px solid var(--border);
+  user-select: none;
+  -webkit-user-select: none;
 }
 .plain-block__render :deep(blockquote) {
   border-left: 3px solid var(--accent);

@@ -18,8 +18,9 @@
  * handles inline marker hiding.
  */
 
-import { RangeSetBuilder, StateField, StateEffect } from '@codemirror/state';
+import { RangeSetBuilder, StateField, StateEffect, Prec } from '@codemirror/state';
 import type { EditorState } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
 import { isDragging, isDragEndTransaction } from './cm-drag-aware';
 import { frozenFieldDuringComposition, isImeSafeFlushTransaction } from './cm-ime-guard';
 import {
@@ -361,9 +362,14 @@ class TldrawWidget extends WidgetType {
     const wrap = document.createElement('div');
     wrap.className = 'cm-live-block cm-live-block--tldraw';
     wrap.setAttribute('data-board-id', this.boardId);
+    // Bordered card lives one level down so the wrap's padding (the old
+    // inter-block margin, see #155) stays outside the border.
+    const card = document.createElement('div');
+    card.className = 'cm-tldraw-card';
     const h = parseInt(this.height, 10);
-    wrap.style.height = `${Number.isFinite(h) && h > 0 ? h : 520}px`;
-    if (this.width) wrap.style.maxWidth = `${this.width}px`;
+    card.style.height = `${Number.isFinite(h) && h > 0 ? h : 520}px`;
+    if (this.width) card.style.maxWidth = `${this.width}px`;
+    wrap.appendChild(card);
 
     // Overflow toolbar: a fullscreen toggle that pops the board into the
     // WhiteboardOverlay (full-window editor). The board id + current snapshot
@@ -399,11 +405,11 @@ class TldrawWidget extends WidgetType {
       );
     });
     toolbar.appendChild(fullBtn);
-    wrap.appendChild(toolbar);
+    card.appendChild(toolbar);
 
     const surface = document.createElement('div');
     surface.className = 'cm-tldraw-surface';
-    wrap.appendChild(surface);
+    card.appendChild(surface);
 
     const placeholder = document.createElement('div');
     placeholder.className = 'cm-tldraw-loading';
@@ -795,14 +801,67 @@ export function liveBlocksExtension(opts: BlockOptions = {}) {
     },
   );
 
-  return [field, relayout];
+  // #155 — ↑/↓ across a collapsed block widget. CM's default vertical motion
+  // has no valid cursor position inside a replaced range, so from the line
+  // next to a table/math/mermaid widget it hops clear over the block. Reveal
+  // model says the caret should land ON the block's edge line instead, which
+  // expands it to source. We compute the default target first and only step
+  // in when that target would jump past a collapsed range.
+  const arrowIntoBlock = (forward: boolean) => (view: EditorView) => {
+    const sel = view.state.selection.main;
+    if (!sel.empty || view.state.selection.ranges.length > 1) return false;
+    const deco = view.state.field(field, false);
+    if (!deco) return false;
+    const doc = view.state.doc;
+    const fromLine = doc.lineAt(sel.head);
+    const def = view.moveVertically(sel, forward);
+    const toLineNo = doc.lineAt(def.head).number;
+    let handled = false;
+    deco.between(0, doc.length, (from, to, d) => {
+      if (!(d.spec as { block?: boolean }).block) return;
+      // tldraw boards never reveal their source (no cursor-inside gating in
+      // buildBlockDecorations), so parking the caret inside one just hides
+      // it — let the default motion hop over the fence instead.
+      if ((d.spec as { widget?: unknown }).widget instanceof TldrawWidget) return;
+      const a = doc.lineAt(from).number;
+      const b = doc.lineAt(to).number;
+      const jumpedOver = forward
+        ? fromLine.number < a && toLineNo > b
+        : fromLine.number > b && toLineNo < a;
+      if (!jumpedOver) return;
+      const edge = doc.line(forward ? a : b);
+      const col = Math.min(sel.head - fromLine.from, edge.length);
+      view.dispatch({
+        selection: { anchor: edge.from + col },
+        scrollIntoView: true,
+        userEvent: 'select',
+      });
+      handled = true;
+      return false;
+    });
+    return handled;
+  };
+  const blockArrowKeymap = Prec.high(
+    keymap.of([
+      { key: 'ArrowUp', run: arrowIntoBlock(false) },
+      { key: 'ArrowDown', run: arrowIntoBlock(true) },
+    ]),
+  );
+
+  return [field, relayout, blockArrowKeymap];
 }
 
 /** Suggested CSS — pulled out so the editor's theme owns the rule set. */
 export const liveBlocksTheme = EditorView.theme({
+  // #155 — block widgets must NOT carry vertical margins: CodeMirror measures
+  // widget height via the border box, so margin space is invisible to its
+  // height map. The resulting drift between the height map and the real DOM
+  // below a table/image/math widget made ↑/↓ teleport across whole screens
+  // (moveVertically scans with height-map coordinates). Spacing lives in
+  // padding instead, which IS measured.
   '.cm-live-block': {
-    margin: '0.6em 0',
-    padding: '0',
+    margin: '0',
+    padding: '0.6em 0',
     cursor: 'text',
   },
   '.cm-live-block--image img': {
@@ -829,14 +888,15 @@ export const liveBlocksTheme = EditorView.theme({
     background: 'var(--bg-soft)',
     fontWeight: '600',
   },
-  // v4.3.0 issue #57a
+  // v4.3.0 issue #57a — paddings fold in the 0.6em that used to come from the
+  // shared margin (see #155 note above) so the visual rhythm is unchanged.
   '.cm-live-block--math': {
-    padding: '0.4em 0',
+    padding: '1em 0',
     overflowX: 'auto',
     textAlign: 'center',
   },
   '.cm-live-block--mermaid': {
-    padding: '0.6em 0',
+    padding: '1.2em 0',
     textAlign: 'center',
   },
   '.cm-live-block--mermaid svg': {
@@ -845,14 +905,19 @@ export const liveBlocksTheme = EditorView.theme({
   },
   // v4.6 F7 — tldraw whiteboard card. A bordered surface hosting the live
   // canvas; the inner `.cm-tldraw-surface` fills it so tldraw can measure.
+  // The bordered card is an inner element (`.cm-tldraw-card`) so the outer
+  // block can keep its measurable padding (#155) without the border growing
+  // around it.
   '.cm-live-block--tldraw': {
+    width: '100%',
+  },
+  '.cm-tldraw-card': {
     position: 'relative',
     width: '100%',
     border: '1px solid var(--border)',
     borderRadius: '8px',
     overflow: 'hidden',
     background: 'var(--bg)',
-    margin: '0.6em 0',
   },
   '.cm-tldraw-surface': {
     position: 'absolute',

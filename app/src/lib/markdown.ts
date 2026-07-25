@@ -164,17 +164,41 @@ md.renderer.rules.fence = function (tokens, idx, options, env, self) {
   if (lang === 'mermaid' || lang === 'tldraw') return html;
   // Inject .cb-line wrappers on each line. We do this on the rendered HTML
   // because the highlight has already produced <span class="hljs-..."> spans
-  // that may straddle multiple lines (most don't, but a few hljs grammars do
-  // emit multi-line comment spans). Split on '\n' and wrap each piece.
+  // that may straddle multiple lines (a few hljs grammars emit multi-line
+  // comment/string spans). A naive split on '\n' leaves those spans
+  // unbalanced, and the browser then NESTS every later line inside line 1
+  // (#164 — the whole block collapsed into the first numbered row). So we
+  // tokenize: at each newline, close the currently-open spans, emit the line,
+  // and reopen them on the next one — every .cb-line is self-contained.
   return html.replace(/<code([^>]*)>([\s\S]*?)<\/code>/, (_m, codeAttrs, inner) => {
     // Strip the trailing newline if any so we don't render an empty
     // line-numbered row at the end.
     const trimmed = inner.endsWith('\n') ? inner.slice(0, -1) : inner;
-    const lines = trimmed.split('\n');
-    const wrapped = lines
-      .map((line: string) => `<span class="cb-line">${line || ' '}</span>`)
-      .join('\n');
-    return `<code${codeAttrs}>${wrapped}</code>`;
+    const openSpans: string[] = [];
+    let out = '';
+    let line = '';
+    const flush = () => {
+      out += `<span class="cb-line">${line || ' '}</span>`;
+      line = '';
+    };
+    for (const tok of trimmed.match(/<span\b[^>]*>|<\/span>|\n|[^<\n]+|</g) ?? []) {
+      if (tok === '\n') {
+        line += '</span>'.repeat(openSpans.length);
+        flush();
+        out += '\n';
+        line = openSpans.join('');
+      } else if (tok.startsWith('<span')) {
+        openSpans.push(tok);
+        line += tok;
+      } else if (tok === '</span>') {
+        openSpans.pop();
+        line += tok;
+      } else {
+        line += tok;
+      }
+    }
+    flush();
+    return `<code${codeAttrs}>${out}</code>`;
   })
     // Add cb-numbered class on the <pre> so CSS can scope the counter.
     .replace(/<pre>/, '<pre class="cb-numbered">');
