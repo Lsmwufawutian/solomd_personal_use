@@ -57,6 +57,7 @@ import {
 } from '../lib/cm-session-restore';
 import { renderMarkdown, extractImageRoot as extractMarkdownImageRoot } from '../lib/markdown';
 import { plantumlSvgUrl } from '../lib/plantuml';
+import { stableClickSelection } from '../lib/cm-stable-click';
 import { installSvgImageFallbacks, rewriteImageUrls } from '../lib/image-resolve';
 import { SLASH_BLOCKS, filterBlocks, expandSnippet } from '../lib/slash-blocks';
 import { useWorkspaceIndexStore } from '../stores/workspaceIndex';
@@ -1901,6 +1902,9 @@ function buildExtensions() {
       : []),
     ...(windowsImeSafeMode || markdownSafeMode ? [] : [taskListExtension()]),
     sessionRestoreExtension(props.tab.id),
+    // #167 — clicks during async widget renders (post tab-switch) must not
+    // turn into phantom multi-line selections when the layout shifts.
+    stableClickSelection(),
     EditorView.updateListener.of((u) => {
       if (u.docChanged) {
         const text = u.state.doc.toString();
