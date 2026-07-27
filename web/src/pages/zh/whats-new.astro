@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.10.1';
+const VERSION = '4.10.2';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -51,6 +51,7 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
           <li><strong>表格不再卡光标。</strong>实时编辑里 ↑/↓ 之前会整个跳过渲染的表格,甚至掠过表格下方的整段文字。现在光标逐行移动,走到表格（以及公式 / Mermaid 块）边缘会进入源码编辑,离开后重新渲染。</li>
           <li><strong>代码块行号修复。</strong>开行号后行距翻倍的问题修复;C 风格 <code>/** */</code> 多行注释把整块吞进第一行的问题修复;所见即所得模式现在与预览遵循同一个行号设置。</li>
           <li><strong>点击就是点击（4.10.1）。</strong>切换标签页后立即点击编辑区——图表/图片还在渲染时——可能变成选中多行而不是放置光标。现在即使布局在点击瞬间发生位移,光标也会留在你按下的位置。</li>
+          <li><strong>点链接用默认程序打开文件（4.10.2）。</strong>Markdown 里指向本地 PDF / Office 文件的链接（<code>[报告](./report.pdf)</code>）现在用系统默认程序打开,不再转成 Markdown。新增设置（默认开启）;指向 <code>.md</code> / 文本 / 图片的链接仍在应用内打开。</li>
         </ul>
       </section>
 

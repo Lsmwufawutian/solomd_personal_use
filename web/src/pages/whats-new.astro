@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.10.1';
+const VERSION = '4.10.2';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -52,6 +52,7 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
           <li><strong>Tables no longer trap the caret.</strong> In live edit, ↑/↓ used to teleport clear over rendered tables — and could skip whole paragraphs below them. The caret now walks every line, steps into a table (or math / Mermaid block) to edit its source, and the block re-renders when you leave.</li>
           <li><strong>Code-block line numbers, fixed.</strong> Numbered code blocks no longer double their line spacing, C-style <code>/** */</code> comments no longer swallow the rest of the block into row 1, and the WYSIWYG editor now honors the same line-number setting as the preview.</li>
           <li><strong>Clicks stay clicks (4.10.1).</strong> Clicking right after a tab switch — while diagrams/images were still rendering — could select multiple lines instead of placing the caret. The caret now stays where you pressed, even when the layout shifts mid-click.</li>
+          <li><strong>Open linked files with the default app (4.10.2).</strong> A Markdown link to a local PDF / Office file (<code>[report](./report.pdf)</code>) now opens in your system's default app instead of being converted to Markdown. New setting, on by default; links to <code>.md</code> / text / images still open inside SoloMD.</li>
         </ul>
       </section>
 
