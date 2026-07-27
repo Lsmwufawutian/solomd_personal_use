@@ -434,11 +434,14 @@ function handleLinkClick(e: MouseEvent) {
     });
     return;
   }
-  // Relative path: resolve against current file's directory and open in app
+  // Relative path: resolve against current file's directory. #163-followup —
+  // route through openLinkedFile so a link to a PDF / Office / etc. opens with
+  // the OS default app (when openLinkedFilesExternally is on) instead of being
+  // converted to Markdown; md / text / images still open in-app.
   if (props.filePath) {
     const resolved = resolveRelativePath(props.filePath, href);
-    files.openPath(resolved, { bypassNewWindow: true }).catch((err) => {
-      console.warn('[Preview] openPath failed:', resolved, err);
+    files.openLinkedFile(resolved, { bypassNewWindow: true }).catch((err) => {
+      console.warn('[Preview] openLinkedFile failed:', resolved, err);
     });
   }
 }

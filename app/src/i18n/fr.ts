@@ -249,6 +249,8 @@ export const fr: I18n = {
     openFileInNewWindowHint: 'Si activé, « Ouvrir un fichier » lance une nouvelle fenêtre au lieu d\'ajouter un onglet à la fenêtre actuelle.',
     revealInFileTreeOnOpen: 'Afficher le fichier dans l\'arborescence à l\'ouverture',
     revealInFileTreeOnOpenHint: 'Si activé, l\'ouverture d\'un fichier place la barre latérale sur son dossier parent (et révèle la barre si masquée).',
+    openLinkedFilesExternally: 'Ouvrir les fichiers liés avec l\'application par défaut',
+    openLinkedFilesExternallyHint: 'Activé, cliquer sur un lien Markdown vers un fichier local PDF / Office / autre document l\'ouvre dans l\'application par défaut du système. Désactivez pour le convertir en Markdown. Les liens vers .md / texte / images s\'ouvrent toujours dans SoloMD.',
     autoCheckUpdate: 'Vérifier automatiquement les mises à jour',
     checkUpdate: 'Vérifier les mises à jour maintenant',
     checkingUpdate: 'Vérification…',

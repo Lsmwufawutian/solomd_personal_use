@@ -247,6 +247,8 @@ export const en = {
     openFileInNewWindowHint: 'When on, "Open File" spawns a new window instead of adding a tab to the current one.',
     revealInFileTreeOnOpen: 'Reveal file in file tree on open',
     revealInFileTreeOnOpenHint: 'When on, opening a file sets the sidebar to its parent folder (and reveals the sidebar if hidden).',
+    openLinkedFilesExternally: 'Open linked files with the system default app',
+    openLinkedFilesExternallyHint: 'When on, clicking a Markdown link to a local PDF / Office / other document opens it in the OS default app. Turn off to convert it to Markdown instead. Links to .md / text / images always open inside SoloMD.',
     autoCheckUpdate: 'Automatically check for updates',
     checkUpdate: 'Check for updates now',
     checkingUpdate: 'Checking…',

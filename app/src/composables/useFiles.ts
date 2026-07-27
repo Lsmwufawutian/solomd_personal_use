@@ -11,6 +11,7 @@ import { useToastsStore } from '../stores/toasts';
 import { useRecentEditsStore } from '../stores/recentEdits';
 import { useWindowsStore } from '../stores/windows';
 import { openImageOverlay, type OverlayStrings } from '../lib/image-overlay';
+import { openPath as openWithSystemDefault } from '@tauri-apps/plugin-opener';
 import { useI18n } from '../i18n';
 import type { FileReadResult, Tab } from '../types';
 import { isSafPath, fromSafPath, safRead, safWrite, safLaunchPicker } from '../lib/saf-fs';
@@ -94,6 +95,20 @@ export function useFiles() {
   // #98 — image files open in the fullscreen image overlay (same viewer the
   // preview pane uses), not the document converter.
   const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp']);
+
+  // Text / code files SoloMD opens natively as an editor tab. A Markdown link
+  // to one of these always opens in-app, regardless of the
+  // `openLinkedFilesExternally` setting (that setting only diverts non-text
+  // documents like PDF / Office / audio to the OS default app). `md` is here
+  // too so `[note](./other.md)` never leaves the editor.
+  const TEXT_LINK_EXTENSIONS = new Set([
+    'md', 'markdown', 'mdx', 'txt', 'text', 'log', 'rst', 'tex', 'org',
+    'js', 'mjs', 'cjs', 'ts', 'tsx', 'jsx', 'json', 'jsonc', 'yaml', 'yml',
+    'toml', 'ini', 'conf', 'cfg', 'env', 'xml', 'css', 'scss', 'sass', 'less',
+    'vue', 'svelte', 'astro', 'py', 'rb', 'php', 'go', 'rs', 'java', 'kt',
+    'swift', 'c', 'h', 'cpp', 'hpp', 'cc', 'cs', 'sh', 'bash', 'zsh', 'fish',
+    'pl', 'lua', 'r', 'sql', 'graphql', 'proto', 'gradle', 'properties',
+  ]);
 
   function overlayStrings(): OverlayStrings {
     return {
@@ -304,6 +319,47 @@ export function useFiles() {
       console.error('open failed', e);
       toasts.error(`Failed to open file: ${e}`);
     }
+  }
+
+  /**
+   * Open a file that was reached by clicking a Markdown LINK (not the file
+   * tree). When `openLinkedFilesExternally` is on, a link to a non-text,
+   * non-image document (PDF, Office, audio, archives, unknown binaries) is
+   * handed to the OS default app — matching the "click the link to open the
+   * file" intuition users have from Typora / Obsidian. Markdown / text / code
+   * and images always stay inside SoloMD (editor tab / image overlay). When
+   * the setting is off, everything routes through `openPath` as before
+   * (PDF/PPTX/EPUB → markitdown conversion).
+   */
+  async function openLinkedFile(
+    path: string,
+    opts: { bypassNewWindow?: boolean } = {},
+  ) {
+    const ext = (path.split('.').pop() || '').toLowerCase();
+    const isImage = IMAGE_EXTENSIONS.has(ext);
+    const isTextLike = TEXT_LINK_EXTENSIONS.has(ext);
+    if (settings.openLinkedFilesExternally && !isImage && !isTextLike) {
+      if (import.meta.env.DEV) {
+        (window as unknown as { __lastLinkOpen?: unknown }).__lastLinkOpen = {
+          mode: 'external',
+          path,
+        };
+      }
+      try {
+        await openWithSystemDefault(path);
+      } catch (e) {
+        console.error('openWithSystemDefault failed', e);
+        toasts.error(`Failed to open: ${e}`);
+      }
+      return;
+    }
+    if (import.meta.env.DEV) {
+      (window as unknown as { __lastLinkOpen?: unknown }).__lastLinkOpen = {
+        mode: isImage ? 'image' : isTextLike ? 'internal' : 'convert',
+        path,
+      };
+    }
+    return openPath(path, opts);
   }
 
   async function openAndConvert(path: string, ext: string) {
@@ -613,6 +669,7 @@ export function useFiles() {
     newTextFile,
     openFile,
     openPath,
+    openLinkedFile,
     openFolder,
     saveActive,
     saveActiveAs,

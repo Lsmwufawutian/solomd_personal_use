@@ -249,6 +249,8 @@ export const ja: I18n = {
     openFileInNewWindowHint: 'オンの場合、「ファイルを開く」は現在のウィンドウにタブを追加せず新しいウィンドウを開きます。',
     revealInFileTreeOnOpen: 'ファイルを開いた時にファイルツリーで表示',
     revealInFileTreeOnOpenHint: 'オンの場合、ファイルを開くとサイドバーが親フォルダに移動します（サイドバーが非表示なら表示します）。',
+    openLinkedFilesExternally: 'リンク先のファイルを既定のアプリで開く',
+    openLinkedFilesExternallyHint: 'オンにすると、Markdown 内のローカル PDF / Office / その他の文書へのリンクをクリックすると OS の既定アプリで開きます。オフにすると Markdown に変換して開きます。.md / テキスト / 画像へのリンクは常に SoloMD 内で開きます。',
     autoCheckUpdate: '自動でアップデートを確認',
     checkUpdate: '今すぐ更新を確認',
     checkingUpdate: '確認中…',

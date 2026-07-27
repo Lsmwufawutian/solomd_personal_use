@@ -1221,6 +1221,16 @@ function onSelectPdfFont(v: string) {
           </div>
         </section>
 
+        <section data-cat="advanced">
+          <label>
+            <input type="checkbox" :checked="settings.openLinkedFilesExternally" @change="settings.toggleOpenLinkedFilesExternally()" />
+            {{ t('settings.openLinkedFilesExternally') }}
+          </label>
+          <div style="font-size: 11px; color: var(--text-faint); margin-top: 4px; line-height: 1.5;">
+            {{ t('settings.openLinkedFilesExternallyHint') }}
+          </div>
+        </section>
+
         <section v-if="!isMobilePlatform && !masBuild" data-cat="advanced">
           <label>
             <input type="checkbox" :checked="settings.autoCheckUpdate" @change="settings.toggleAutoCheckUpdate()" />

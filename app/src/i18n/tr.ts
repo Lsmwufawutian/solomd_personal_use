@@ -249,6 +249,8 @@ export const tr: I18n = {
     openFileInNewWindowHint: 'Açıkken "Dosya Aç" mevcut pencereye sekme eklemek yerine yeni pencere açar.',
     revealInFileTreeOnOpen: 'Açılan dosyayı dosya ağacında göster',
     revealInFileTreeOnOpenHint: 'Açıkken bir dosya açıldığında kenar çubuğu üst klasöre ayarlanır (gizliyse kenar çubuğu da gösterilir).',
+    openLinkedFilesExternally: 'Bağlantılı dosyaları varsayılan uygulamayla aç',
+    openLinkedFilesExternallyHint: 'Açıkken, Markdown içindeki yerel bir PDF / Office / başka belgeye giden bağlantıya tıklamak onu sistemin varsayılan uygulamasında açar. Bunun yerine Markdown\'a dönüştürmek için kapatın. .md / metin / görsel bağlantıları her zaman SoloMD içinde açılır.',
     autoCheckUpdate: 'Güncellemeleri otomatik denetle',
     checkUpdate: 'Şimdi güncelleme denetle',
     checkingUpdate: 'Denetleniyor…',

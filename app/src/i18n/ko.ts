@@ -249,6 +249,8 @@ export const ko: I18n = {
     openFileInNewWindowHint: '켜두면 "파일 열기"가 현재 창에 탭을 추가하지 않고 새 창을 엽니다.',
     revealInFileTreeOnOpen: '파일 열 때 파일 트리에서 표시',
     revealInFileTreeOnOpenHint: '켜두면 파일을 열 때 사이드바가 상위 폴더로 이동합니다(숨겨져 있으면 표시).',
+    openLinkedFilesExternally: '링크된 파일을 기본 앱으로 열기',
+    openLinkedFilesExternallyHint: '켜면 Markdown 안의 로컬 PDF / Office / 기타 문서 링크를 클릭할 때 OS 기본 앱으로 엽니다. 끄면 대신 Markdown으로 변환해 엽니다. .md / 텍스트 / 이미지 링크는 항상 SoloMD 안에서 열립니다.',
     autoCheckUpdate: '업데이트 자동 확인',
     checkUpdate: '지금 업데이트 확인',
     checkingUpdate: '확인 중…',

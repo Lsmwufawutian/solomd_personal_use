@@ -249,6 +249,8 @@ export const pl: I18n = {
     openFileInNewWindowHint: 'Gdy włączone, „Otwórz plik” otwiera nowe okno zamiast dodawać kartę do bieżącego.',
     revealInFileTreeOnOpen: 'Pokaż plik w drzewie plików przy otwieraniu',
     revealInFileTreeOnOpenHint: 'Gdy włączone, otwarcie pliku ustawia panel boczny na jego folder nadrzędny (i odsłania panel, jeśli był ukryty).',
+    openLinkedFilesExternally: 'Otwieraj powiązane pliki w domyślnej aplikacji',
+    openLinkedFilesExternallyHint: 'Gdy włączone, kliknięcie linku Markdown do lokalnego pliku PDF / Office / innego dokumentu otwiera go w domyślnej aplikacji systemu. Wyłącz, aby zamiast tego przekonwertować na Markdown. Linki do .md / tekstu / obrazów zawsze otwierają się w SoloMD.',
     autoCheckUpdate: 'Automatycznie sprawdzaj aktualizacje',
     checkUpdate: 'Sprawdź aktualizacje teraz',
     checkingUpdate: 'Sprawdzanie…',

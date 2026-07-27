@@ -249,6 +249,8 @@ export const sv: I18n = {
     openFileInNewWindowHint: 'När påslaget öppnar "Öppna fil" ett nytt fönster istället för att lägga till en flik i det aktuella.',
     revealInFileTreeOnOpen: 'Visa fil i filträdet vid öppning',
     revealInFileTreeOnOpenHint: 'När påslaget sätter sidofältet till filens överordnade mapp vid öppning (och visar sidofältet om det är dolt).',
+    openLinkedFilesExternally: 'Öppna länkade filer med systemets standardapp',
+    openLinkedFilesExternallyHint: 'När på öppnar ett klick på en Markdown-länk till en lokal PDF- / Office- / annan dokumentfil den i systemets standardapp. Stäng av för att i stället konvertera den till Markdown. Länkar till .md / text / bilder öppnas alltid i SoloMD.',
     autoCheckUpdate: 'Sök efter uppdateringar automatiskt',
     checkUpdate: 'Sök efter uppdateringar nu',
     checkingUpdate: 'Söker…',

@@ -249,6 +249,8 @@ export const it: I18n = {
     openFileInNewWindowHint: 'Quando attivo, "Apri file" apre una nuova finestra invece di aggiungere una scheda a quella corrente.',
     revealInFileTreeOnOpen: 'Rivela file nell\'albero all\'apertura',
     revealInFileTreeOnOpenHint: 'Quando attivo, aprire un file porta la barra laterale alla sua cartella padre (e rivela la barra se nascosta).',
+    openLinkedFilesExternally: 'Apri i file collegati con l\'app predefinita',
+    openLinkedFilesExternallyHint: 'Se attivo, fare clic su un link Markdown verso un file locale PDF / Office / altro documento lo apre nell\'app predefinita del sistema. Disattiva per convertirlo in Markdown. I link a .md / testo / immagini si aprono sempre dentro SoloMD.',
     autoCheckUpdate: 'Controlla aggiornamenti automaticamente',
     checkUpdate: 'Controlla aggiornamenti ora',
     checkingUpdate: 'Controllo…',

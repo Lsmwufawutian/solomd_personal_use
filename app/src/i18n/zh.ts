@@ -249,6 +249,8 @@ export const zh: I18n = {
     openFileInNewWindowHint: '开启后，从「打开文件」菜单/工具栏选文件时会开新窗口，而不是在当前窗口加标签页。',
     revealInFileTreeOnOpen: '打开文件后自动切到所在文件夹',
     revealInFileTreeOnOpenHint: '开启后，打开文件会自动把左侧文件树定位到文件所在文件夹（如未显示则自动打开）。',
+    openLinkedFilesExternally: '用默认程序打开链接的文件',
+    openLinkedFilesExternallyHint: '开启后，点击 Markdown 里指向本地 PDF / Office / 其他文档的链接，会用系统默认程序打开；关闭则转换成 Markdown 打开。指向 .md / 文本 / 图片的链接始终在 SoloMD 内打开。',
     autoCheckUpdate: '自动检查更新',
     checkUpdate: '立即检查更新',
     checkingUpdate: '检查中…',

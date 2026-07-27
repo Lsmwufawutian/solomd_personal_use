@@ -122,6 +122,12 @@ interface Settings {
   // After opening a file, point the file tree sidebar at its parent folder
   // (and reveal the sidebar if hidden). Default off.
   revealInFileTreeOnOpen: boolean;
+  // Clicking a Markdown link to a local NON-document file (e.g.
+  // `[x](./report.pdf)`) opens it with the OS default app (Typora/Obsidian
+  // style) instead of converting it to Markdown via markitdown. Applies to
+  // links only (file-tree double-click keeps converting). Default on — a
+  // link click reads as "open this file". Turn off to convert instead.
+  openLinkedFilesExternally: boolean;
   // First-launch welcome tour: opened automatically once. Don't reopen.
   welcomeShown: boolean;
   // v4.0 first-run agent setup wizard. Shown once after the welcome tour to
@@ -449,6 +455,7 @@ function defaults(): Settings {
     autoSaveOnBlur: false,
     openFileInNewWindow: false,
     revealInFileTreeOnOpen: false,
+    openLinkedFilesExternally: true,
     welcomeShown: false,
     agentWizardSeen: false,
     showBacklinks: true,
@@ -852,6 +859,10 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleRevealInFileTreeOnOpen() {
       this.revealInFileTreeOnOpen = !this.revealInFileTreeOnOpen;
+      this.persist();
+    },
+    toggleOpenLinkedFilesExternally() {
+      this.openLinkedFilesExternally = !this.openLinkedFilesExternally;
       this.persist();
     },
     markWelcomeShown() {
