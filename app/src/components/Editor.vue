@@ -344,7 +344,7 @@ function renderPlainBlock(src: string): string {
   // setting invalidates previously rendered blocks. The per-call `breaks`
   // override is gone: the shared md singleton now follows the setting, so
   // the live editor, preview pane and exports all agree.
-  const key = `${settings.markdownHardBreaks ? 'hb' : 'sb'}\u0000${props.tab.filePath || ''}\u0000${root}\u0000${src}`;
+  const key = `${settings.markdownHardBreaks ? 'hb' : 'sb'}${settings.markdownAutoNumberHeadings ? 'nh' : ''}\u0000${props.tab.filePath || ''}\u0000${root}\u0000${src}`;
   const cached = plainRenderCache.get(key);
   if (cached != null) return cached;
   const html = rewriteImageUrls(

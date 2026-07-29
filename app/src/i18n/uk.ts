@@ -145,6 +145,8 @@ export const uk: I18n = {
     codeBlockLineNumbersHint: 'Додає колонку 1, 2, 3… до кожного огородженого блоку коду в попередньому перегляді. Успадковується експортами PDF/DOCX/зображення.',
     markdownHardBreaks: 'Відображати одиничні переноси рядка як розриви',
     markdownHardBreaksHint: 'Як у Typora: одне натискання Enter створює розрив рядка в перегляді та всіх експортах. Вимкнено = строгий Markdown (одиничні переноси зливаються в абзац; порожній рядок розділяє).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Перенесення слів',
     lineNumbers: 'Номери рядків',
     livePreview: 'Живий перегляд (Markdown) — приховувати маркери поза рядком, рендерити заголовки, жирний тощо',

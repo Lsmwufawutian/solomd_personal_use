@@ -145,6 +145,8 @@ export const es: I18n = {
     codeBlockLineNumbersHint: 'Añade una columna 1, 2, 3… a cada bloque de código vallado en la vista previa. Heredado por exportaciones PDF/DOCX/imagen.',
     markdownHardBreaks: 'Renderizar saltos de línea simples como saltos',
     markdownHardBreaksHint: 'Como Typora: una sola pulsación de Enter crea un salto de línea en la vista previa y todas las exportaciones. Desactivado = Markdown estricto (los saltos simples se funden en un párrafo; usa una línea en blanco para separar).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Ajuste de línea',
     lineNumbers: 'Números de línea',
     livePreview: 'Vista previa en vivo (Markdown) — ocultar marcadores fuera de línea, renderizar títulos, negrita, etc.',

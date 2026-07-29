@@ -145,6 +145,8 @@ export const nl: I18n = {
     codeBlockLineNumbersHint: 'Voegt een 1, 2, 3…-goot toe aan elk afgebakend codeblok in het voorbeeld. Overgenomen door PDF/DOCX/afbeelding-exports.',
     markdownHardBreaks: 'Enkele regeleinden als regelafbreking weergeven',
     markdownHardBreaksHint: 'Zoals Typora: één keer Enter geeft een regelafbreking in het voorbeeld en alle exports. Uit = strikte Markdown (enkele regeleinden smelten samen tot één alinea; lege regel scheidt).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Regelterugloop',
     lineNumbers: 'Regelnummers',
     livePreview: 'Live-voorvertoning (Markdown) — markers buiten regel verbergen, koppen, vetgedrukt enz. renderen',

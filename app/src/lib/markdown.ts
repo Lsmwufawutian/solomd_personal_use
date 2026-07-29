@@ -647,18 +647,77 @@ export function setMarkdownHardBreaks(on: boolean): void {
   md.set({ breaks: on });
 }
 
+// ---- Numbered-section auto-headings (opt-in setting) ----------------------
+// Chinese reports / 公文 often write section numbers as plain text —
+// `6.2 出口许可证管理目录` — with no `#`, so neither markdown-it nor Typora
+// treat them as headings (a heading needs `#` + space; a bare number is just
+// text). When the `markdownAutoNumberHeadings` setting is on we promote such
+// lines to headings whose level tracks the numbering depth (`6.2` → h2,
+// `6.2.1` → h3). Default OFF because auto-promotion is inherently heuristic
+// (a line like `3.14 是圆周率` starts with a decimal too), so the user opts in.
+let autoNumberHeadings = false;
+
+/** Sync the numbered-heading toggle from the settings store. */
+export function setMarkdownAutoNumberHeadings(on: boolean): void {
+  autoNumberHeadings = on;
+}
+
+// Require ≥2 dot-joined numeric segments (`6.2`, `6.2.1`) so single-number
+// sentences ("6 个要点") and ordered-list markers (`1.`) are never touched.
+const NUMBERED_HEADING_RE = /^(\d+(?:\.\d+)+)\.?[ \t]+(\S.*?)\s*$/;
+// Lines whose text ends in sentence punctuation are prose that merely opens
+// with a decimal, not a section title — leave them alone.
+const SENTENCE_END_RE = /[。．.！？!?，,；;、]$/;
+
+function numberedSectionHeadings(source: string): string {
+  const lines = source.split('\n');
+  const out: string[] = [];
+  let inFence = false;
+  let fenceChar = '';
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (const line of lines) {
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) {
+        inFence = true;
+        fenceChar = fm[2][0];
+        out.push(line);
+        continue;
+      }
+      if (fm[2][0] === fenceChar) {
+        inFence = false;
+        out.push(line);
+        continue;
+      }
+    }
+    if (inFence) {
+      out.push(line);
+      continue;
+    }
+    const m = NUMBERED_HEADING_RE.exec(line);
+    if (m && !SENTENCE_END_RE.test(m[2])) {
+      const depth = Math.min(6, m[1].split('.').length);
+      out.push(`${'#'.repeat(depth)} ${m[1]} ${m[2]}`);
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
 /**
  * Run the source through every leniency preprocessor (inline-HTML-block
  * unwrapping #71, malformed table-delimiter repair, list re-indent #132) that
  * makes AI/PDF-exported Markdown render like Typora/Obsidian. Both the HTML
  * render path (`renderMarkdown`) and the DOCX token path (`markdownToDocxBlob`
  * via `md.parse`) must apply this identically, so it lives here as the single
- * source of truth.
+ * source of truth. The numbered-section step is gated behind its opt-in
+ * setting.
  */
 export function preprocessMarkdown(source: string): string {
-  return normalizeListIndent(
-    normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || '')),
-  );
+  let s = normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || ''));
+  if (autoNumberHeadings) s = numberedSectionHeadings(s);
+  return normalizeListIndent(s);
 }
 
 export function renderMarkdown(source: string, options?: { breaks?: boolean }): string {

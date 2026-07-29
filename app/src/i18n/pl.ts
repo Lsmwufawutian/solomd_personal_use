@@ -145,6 +145,8 @@ export const pl: I18n = {
     codeBlockLineNumbersHint: 'Dodaje rynnę 1, 2, 3… do każdego ogrodzonego bloku kodu w podglądzie. Dziedziczone przez eksporty PDF/DOCX/obraz.',
     markdownHardBreaks: 'Renderuj pojedyncze nowe linie jako łamanie wiersza',
     markdownHardBreaksHint: 'Jak w Typorze: jedno naciśnięcie Enter tworzy łamanie wiersza w podglądzie i wszystkich eksportach. Wyłączone = ścisły Markdown (pojedyncze nowe linie łączą się w akapit; pusty wiersz rozdziela).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Zawijanie wierszy',
     lineNumbers: 'Numery wierszy',
     livePreview: 'Podgląd na żywo (Markdown) — ukryj znaczniki poza linią, renderuj nagłówki, pogrubienie itd.',

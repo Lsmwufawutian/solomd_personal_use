@@ -145,6 +145,8 @@ export const fr: I18n = {
     codeBlockLineNumbersHint: 'Ajoute une gouttière 1, 2, 3… à chaque bloc de code clôturé dans l\'aperçu. Hérité par les exports PDF/DOCX/image.',
     markdownHardBreaks: 'Rendre les sauts de ligne simples comme des retours',
     markdownHardBreaksHint: 'Comme Typora : une seule pression sur Entrée crée un retour à la ligne dans l\'aperçu et tous les exports. Désactivé = Markdown strict (les sauts simples fusionnent dans le paragraphe ; une ligne vide sépare).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Retour à la ligne',
     lineNumbers: 'Numéros de ligne',
     livePreview: 'Aperçu en direct (Markdown) — cacher les marqueurs hors ligne, rendu des titres, gras, etc.',

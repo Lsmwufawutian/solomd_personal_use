@@ -145,6 +145,8 @@ export const ja: I18n = {
     codeBlockLineNumbersHint: 'プレビューの各フェンスコードブロックに 1, 2, 3… の行番号列を表示。PDF / DOCX / 画像エクスポートに引き継がれます。',
     markdownHardBreaks: '単一の改行を改行として表示',
     markdownHardBreaksHint: 'Typora と同様:Enter 一回でプレビューと全エクスポートで改行されます。オフ = 厳密な Markdown(単一改行は同じ段落に結合され、空行で段落を分けます)。',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: '行折り返し',
     lineNumbers: '行番号',
     livePreview: 'ライブプレビュー（Markdown）— 行外マーカーを隠して見出し・太字などをレンダリング',

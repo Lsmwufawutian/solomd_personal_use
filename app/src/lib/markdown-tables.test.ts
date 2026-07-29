@@ -15,7 +15,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { renderMarkdown, preprocessMarkdown } from './markdown.ts';
+import {
+  renderMarkdown,
+  preprocessMarkdown,
+  setMarkdownAutoNumberHeadings,
+} from './markdown.ts';
 
 // The render pipeline tags block elements with `data-source-line`, so <table>
 // carries attributes — match the tag open, not a bare `<table>`.
@@ -84,4 +88,41 @@ test('一份文档中的多个畸形表格都被修复', () => {
 |:------:|------|----------|
 | （一） | 核材料 |`;
   assert.equal(countTables(renderMarkdown(src)), 2);
+});
+
+// ---- 编号章节自动转标题(可选设置) --------------------------------------
+
+test('默认关闭:编号行不转标题', () => {
+  setMarkdownAutoNumberHeadings(false);
+  const html = renderMarkdown('6.2 出口许可证管理目录（三部分并列）');
+  assert.equal(/<h[1-6][\s>]/.test(html), false);
+});
+
+test('开启后:编号行按深度转为标题', () => {
+  setMarkdownAutoNumberHeadings(true);
+  try {
+    const html = renderMarkdown(
+      '6.2 出口许可证管理目录（三部分并列）\n\n6.2.1 第一部分：两用物项',
+    );
+    assert.match(html, /<h2[^>]*>6\.2 出口许可证管理目录（三部分并列）<\/h2>/);
+    assert.match(html, /<h3[^>]*>6\.2\.1 第一部分：两用物项<\/h3>/);
+  } finally {
+    setMarkdownAutoNumberHeadings(false);
+  }
+});
+
+test('开启后:有序列表 / 小数句子 / 单数字 不被误转', () => {
+  setMarkdownAutoNumberHeadings(true);
+  try {
+    // 有序列表(单段编号 + 尾点)保持列表
+    assert.equal(/<h[1-6][\s>]/.test(renderMarkdown('1. 项目一')), false);
+    // 以小数开头、句末有标点的散文不转
+    assert.equal(/<h[1-6][\s>]/.test(renderMarkdown('3.14 是圆周率。')), false);
+    // 单个数字(易误判)不转
+    assert.equal(/<h[1-6][\s>]/.test(renderMarkdown('6 个要点如下')), false);
+    // 代码块内不转
+    assert.equal(/<h[1-6][\s>]/.test(renderMarkdown('```\n6.2 in code\n```')), false);
+  } finally {
+    setMarkdownAutoNumberHeadings(false);
+  }
 });

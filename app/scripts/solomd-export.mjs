@@ -63,6 +63,8 @@ function parseArgs(argv) {
       args.format = argv[++i];
     } else if (a === '--output' || a === '-o') {
       args.output = argv[++i];
+    } else if (a === '--number-headings') {
+      args.numberHeadings = true;
     } else if (a === '--help' || a === '-h') {
       args.help = true;
     } else if (!args.input && !a.startsWith('-')) {
@@ -81,6 +83,7 @@ Usage:
 Options:
   -f, --format <fmt>   Output format (default: html)
   -o, --output <path>  Output file (default: <input>.<fmt> next to input)
+      --number-headings  Promote numbered sections (6.2, 6.2.1) to headings
   -h, --help           Show this help
 
 Notes:
@@ -267,8 +270,38 @@ function normalizeListIndent(source) {
   return out.join('\n');
 }
 
+// Opt-in numbered-section headings (mirror of markdown.ts; --number-headings).
+let autoNumberHeadings = false;
+const NUMBERED_HEADING_RE = /^(\d+(?:\.\d+)+)\.?[ \t]+(\S.*?)\s*$/;
+const SENTENCE_END_RE = /[。．.！？!?，,；;、]$/;
+function numberedSectionHeadings(source) {
+  const lines = source.split('\n');
+  const out = [];
+  let inFence = false;
+  let fenceChar = '';
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (const line of lines) {
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) { inFence = true; fenceChar = fm[2][0]; out.push(line); continue; }
+      if (fm[2][0] === fenceChar) { inFence = false; out.push(line); continue; }
+    }
+    if (inFence) { out.push(line); continue; }
+    const m = NUMBERED_HEADING_RE.exec(line);
+    if (m && !SENTENCE_END_RE.test(m[2])) {
+      const depth = Math.min(6, m[1].split('.').length);
+      out.push(`${'#'.repeat(depth)} ${m[1]} ${m[2]}`);
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
 function preprocessMarkdown(source) {
-  return normalizeListIndent(normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || '')));
+  let s = normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || ''));
+  if (autoNumberHeadings) s = numberedSectionHeadings(s);
+  return normalizeListIndent(s);
 }
 
 function renderHtml(source) {
@@ -791,6 +824,7 @@ async function main() {
     process.exit(2);
   }
 
+  autoNumberHeadings = !!args.numberHeadings;
   const source = fs.readFileSync(inputPath, 'utf8');
   const baseName = path.basename(inputPath).replace(/\.[^.]+$/, '');
   const dir = path.dirname(inputPath);

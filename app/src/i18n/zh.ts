@@ -145,6 +145,8 @@ export const zh: I18n = {
     codeBlockLineNumbersHint: '在预览中的每个围栏代码块旁显示 1, 2, 3… 行号列。PDF / DOCX / 图片导出会沿用。',
     markdownHardBreaks: '单个换行渲染为换行',
     markdownHardBreaksHint: '与 Typora 一致:按一次回车,预览和所有导出都换行。关闭 = 严格 Markdown(单个换行并入同一段落,需空行分段)。',
+    markdownAutoNumberHeadings: '编号章节自动转标题',
+    markdownAutoNumberHeadingsHint: '把「6.2 出口许可证管理目录」「6.2.1 第一部分」这类纯编号行识别为标题,层级跟随编号深度(6.2 → 二级,6.2.1 → 三级),无需手动加 #。默认关闭:以小数开头的行(如「3.14 是圆周率」)也可能被匹配。',
     wordWrap: '自动换行',
     lineNumbers: '显示行号',
     livePreview: '实时预览 (Markdown) — 离开行时隐藏标记符,渲染标题和粗体等',
