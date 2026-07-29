@@ -102,8 +102,177 @@ const md = new MarkdownIt({
   breaks: false,
 }).use(katex.default ?? katex, { throwOnError: false }).use(footnote).use(mark);
 
+// ---------------------------------------------------------------------------
+// Leniency preprocessors — MUST mirror app/src/lib/markdown.ts preprocessMarkdown
+// (inline-HTML-block unwrapping #71, malformed table-delimiter repair, list
+// re-indent #132). This headless script keeps its own copy on purpose (no TS
+// build step); keep it in sync with markdown.ts. Covered by the self-test in
+// markdown-tables.test.ts's sibling checks.
+// ---------------------------------------------------------------------------
+const HTML_BLOCK_PASSTHROUGH_TAGS = [
+  'table', 'div', 'details', 'figure', 'iframe', 'blockquote', 'pre',
+  'section', 'article', 'aside',
+];
+const HTML_BLOCK_RE = new RegExp(
+  `^([ \\t]*)(<(?:${HTML_BLOCK_PASSTHROUGH_TAGS.join('|')})\\b[\\s\\S]*?</(?:${HTML_BLOCK_PASSTHROUGH_TAGS.join('|')})>)[ \\t]*$`,
+  'gmi',
+);
+function unwrapInlineHtmlBlocks(source) {
+  const FENCE_RE = /(^|\n)(```|~~~)[^\n]*\n[\s\S]*?\n\2[ \t]*(?=\n|$)/g;
+  const segments = [];
+  let lastIndex = 0;
+  let m;
+  while ((m = FENCE_RE.exec(source)) !== null) {
+    if (m.index > lastIndex) segments.push({ text: source.slice(lastIndex, m.index), isFence: false });
+    segments.push({ text: m[0], isFence: true });
+    lastIndex = m.index + m[0].length;
+  }
+  if (lastIndex < source.length) segments.push({ text: source.slice(lastIndex), isFence: false });
+  return segments
+    .map((seg) => (seg.isFence ? seg.text : seg.text.replace(HTML_BLOCK_RE, (_x, _i, html) => `\n\n${html}\n\n`)))
+    .join('');
+}
+
+const TABLE_DELIM_CELL_RE = /^\s*:?-+:?\s*$/;
+function splitTableRow(line) {
+  const cells = [];
+  let cur = '';
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '\\' && i + 1 < line.length) { cur += c + line[i + 1]; i++; continue; }
+    if (c === '|') { cells.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  cells.push(cur);
+  return cells;
+}
+function tableRowCells(line) {
+  const cells = splitTableRow(line.trim());
+  if (cells.length && cells[0].trim() === '') cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+  return cells;
+}
+function isTableDelimiterRow(line) {
+  const cells = tableRowCells(line);
+  if (cells.length === 0) return false;
+  let hasRealCell = false;
+  for (const c of cells) {
+    if (c.trim() === '') continue;
+    if (!TABLE_DELIM_CELL_RE.test(c)) return false;
+    hasRealCell = true;
+  }
+  return hasRealCell;
+}
+function normalizeDelimiterCell(raw) {
+  const t = (raw ?? '').trim();
+  const left = t.startsWith(':');
+  const right = t.endsWith(':');
+  if (left && right) return ':---:';
+  if (right) return '---:';
+  if (left) return ':---';
+  return '---';
+}
+function normalizeTableDelimiters(source) {
+  const lines = source.split('\n');
+  const out = [];
+  let inFence = false;
+  let fenceChar = '';
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) { inFence = true; fenceChar = fm[2][0]; out.push(line); continue; }
+      if (fm[2][0] === fenceChar) { inFence = false; out.push(line); continue; }
+    }
+    if (inFence) { out.push(line); continue; }
+    const next = lines[i + 1];
+    const headerLooksTabular = line.includes('|') && line.trim() !== '';
+    if (headerLooksTabular && next !== undefined && next.includes('|') && isTableDelimiterRow(next)) {
+      const headerCells = tableRowCells(line);
+      const delimCells = tableRowCells(next);
+      const needsRepair =
+        delimCells.length !== headerCells.length || delimCells.some((c) => c.trim() === '');
+      if (headerCells.length >= 1 && needsRepair) {
+        const fixed = [];
+        for (let k = 0; k < headerCells.length; k++) fixed.push(normalizeDelimiterCell(delimCells[k]));
+        const indent = (next.match(/^\s*/) || [''])[0];
+        out.push(line);
+        out.push(`${indent}| ${fixed.join(' | ')} |`);
+        i++;
+        continue;
+      }
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+function normalizeListIndent(source) {
+  const expand = (ws) => {
+    let n = 0;
+    for (const c of ws) n += c === '\t' ? 4 - (n % 4) : 1;
+    return n;
+  };
+  const lines = source.split('\n');
+  const out = [];
+  const stack = [];
+  let inFence = false;
+  let fenceChar = '';
+  let curDelta = 0;
+  let curOrig = -1;
+  const markRe = /^(\s*)([-*+]|\d{1,9}[.)])(\s+)(.*)$/;
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (const line of lines) {
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) { inFence = true; fenceChar = fm[2][0]; out.push(line); continue; }
+      if (fm[2][0] === fenceChar) { inFence = false; out.push(line); continue; }
+    }
+    if (inFence) { out.push(line); continue; }
+    const m = markRe.exec(line);
+    if (m) {
+      const orig = expand(m[1]);
+      while (stack.length && orig < stack[stack.length - 1].orig) stack.pop();
+      const top = stack[stack.length - 1];
+      let norm;
+      if (top && orig === top.orig) {
+        norm = top.norm;
+      } else if (top && orig > top.orig) {
+        norm = top.norm + 2;
+        stack.push({ orig, norm });
+      } else {
+        norm = 0;
+        stack.length = 0;
+        stack.push({ orig, norm });
+      }
+      curDelta = norm - orig;
+      curOrig = orig;
+      out.push(' '.repeat(norm) + m[2] + m[3] + m[4]);
+    } else if (line.trim() === '') {
+      out.push(line);
+    } else {
+      const leadWs = (line.match(/^\s*/) || [''])[0];
+      const lead = expand(leadWs);
+      if (stack.length && curOrig >= 0 && lead >= curOrig) {
+        out.push(' '.repeat(Math.max(0, lead + curDelta)) + line.slice(leadWs.length));
+      } else {
+        stack.length = 0;
+        curDelta = 0;
+        curOrig = -1;
+        out.push(line);
+      }
+    }
+  }
+  return out.join('\n');
+}
+
+function preprocessMarkdown(source) {
+  return normalizeListIndent(normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || '')));
+}
+
 function renderHtml(source) {
-  return md.render(source ?? '');
+  return md.render(preprocessMarkdown(source ?? ''));
 }
 
 // ---------------------------------------------------------------------------
@@ -551,7 +720,7 @@ function buildTable(inner) {
 
 async function markdownToDocxBuffer(source, title = 'Document', filePath) {
   imageCache.clear();
-  const tokens = md.parse(source ?? '', {});
+  const tokens = md.parse(preprocessMarkdown(source ?? ''), {});
   const imageRoot = extractImageRoot(source);
   const blocks = buildBody(tokens, imageRoot, filePath);
   if (blocks.length === 0) blocks.push(new Paragraph({ text: '' }));
