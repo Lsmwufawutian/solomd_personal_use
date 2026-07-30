@@ -421,6 +421,142 @@ function unwrapInlineHtmlBlocks(source: string): string {
     .join('');
 }
 
+// ---- Malformed table-delimiter normalization ------------------------------
+// GFM (and markdown-it) require the delimiter row (the `|---|---|` line under
+// the header) to have EXACTLY the same number of cells as the header row. If
+// it doesn't — one cell too many or too few — markdown-it rejects the *entire*
+// block and renders it as a plain paragraph, so the whole table collapses into
+// literal `| … |` text in the preview. AI/LLM exports and PDF-to-Markdown tools
+// frequently emit a stray extra `|---|` cell in the delimiter row (e.g. a
+// 3-column header with a 4-cell delimiter), which silently breaks the table.
+// Typora/Obsidian tolerate this; we do too — same philosophy as the list-indent
+// and inline-HTML-block fixups above.
+const TABLE_DELIM_CELL_RE = /^\s*:?-+:?\s*$/;
+
+/** Split a table row on unescaped `|` (a `\|` is a literal pipe in a cell). */
+function splitTableRow(line: string): string[] {
+  const cells: string[] = [];
+  let cur = '';
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '\\' && i + 1 < line.length) {
+      cur += c + line[i + 1];
+      i++;
+      continue;
+    }
+    if (c === '|') {
+      cells.push(cur);
+      cur = '';
+      continue;
+    }
+    cur += c;
+  }
+  cells.push(cur);
+  return cells;
+}
+
+/** Cell count as markdown-it sees it: split on `|`, drop the empty leading /
+ *  trailing cells produced by an outer `| … |` border. */
+function tableRowCells(line: string): string[] {
+  const cells = splitTableRow(line.trim());
+  if (cells.length && cells[0].trim() === '') cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === '') cells.pop();
+  return cells;
+}
+
+function isTableDelimiterRow(line: string): boolean {
+  const cells = tableRowCells(line);
+  if (cells.length === 0) return false;
+  // Tolerate empty cells (AI exports emit `| --- |  | --- |`); markdown-it
+  // rejects those outright, but as long as there's at least one real `---`
+  // cell and no cell holds actual content, it's a mangled delimiter row we
+  // can repair. Requiring ≥1 real cell keeps an all-empty `|  |  |` — which
+  // is a data row, not a delimiter — from being misclassified.
+  let hasRealCell = false;
+  for (const c of cells) {
+    if (c.trim() === '') continue;
+    if (!TABLE_DELIM_CELL_RE.test(c)) return false;
+    hasRealCell = true;
+  }
+  return hasRealCell;
+}
+
+/** Rebuild one delimiter cell, preserving its alignment colons. */
+function normalizeDelimiterCell(raw: string | undefined): string {
+  const t = (raw ?? '').trim();
+  const left = t.startsWith(':');
+  const right = t.endsWith(':');
+  if (left && right) return ':---:';
+  if (right) return '---:';
+  if (left) return ':---';
+  return '---';
+}
+
+/** When a delimiter row is malformed — its cell count differs from the header,
+ *  or it contains an empty cell markdown-it rejects — rewrite it to exactly the
+ *  header's column count, padding missing cells with `---`, dropping surplus
+ *  ones, and keeping each surviving cell's alignment. Fenced code is skipped so
+ *  `| a | b |` samples inside ``` blocks are left untouched. */
+function normalizeTableDelimiters(source: string): string {
+  const lines = source.split('\n');
+  const out: string[] = [];
+  let inFence = false;
+  let fenceChar = '';
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) {
+        inFence = true;
+        fenceChar = fm[2][0];
+        out.push(line);
+        continue;
+      }
+      if (fm[2][0] === fenceChar) {
+        inFence = false;
+        out.push(line);
+        continue;
+      }
+    }
+    if (inFence) {
+      out.push(line);
+      continue;
+    }
+
+    const next = lines[i + 1];
+    const headerLooksTabular = line.includes('|') && line.trim() !== '';
+    if (
+      headerLooksTabular &&
+      next !== undefined &&
+      next.includes('|') &&
+      isTableDelimiterRow(next)
+    ) {
+      const headerCells = tableRowCells(line);
+      const delimCells = tableRowCells(next);
+      // Repair when the delimiter's column count differs from the header, OR
+      // when it has an empty cell markdown-it would choke on. A count-matched,
+      // fully-valid delimiter is left byte-for-byte untouched.
+      const needsRepair =
+        delimCells.length !== headerCells.length ||
+        delimCells.some((c) => c.trim() === '');
+      if (headerCells.length >= 1 && needsRepair) {
+        const fixed: string[] = [];
+        for (let k = 0; k < headerCells.length; k++) {
+          fixed.push(normalizeDelimiterCell(delimCells[k]));
+        }
+        const indent = (next.match(/^\s*/) as RegExpMatchArray)[0];
+        out.push(line); // header unchanged
+        out.push(`${indent}| ${fixed.join(' | ')} |`); // corrected delimiter
+        i++; // skip the original malformed delimiter
+        continue;
+      }
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
 /**
  * #132 — re-indent nested list items to consistent 2-space steps.
  *
@@ -511,9 +647,82 @@ export function setMarkdownHardBreaks(on: boolean): void {
   md.set({ breaks: on });
 }
 
+// ---- Numbered-section auto-headings (opt-in setting) ----------------------
+// Chinese reports / 公文 often write section numbers as plain text —
+// `6.2 出口许可证管理目录` — with no `#`, so neither markdown-it nor Typora
+// treat them as headings (a heading needs `#` + space; a bare number is just
+// text). When the `markdownAutoNumberHeadings` setting is on we promote such
+// lines to headings whose level tracks the numbering depth (`6.2` → h2,
+// `6.2.1` → h3). Default OFF because auto-promotion is inherently heuristic
+// (a line like `3.14 是圆周率` starts with a decimal too), so the user opts in.
+let autoNumberHeadings = false;
+
+/** Sync the numbered-heading toggle from the settings store. */
+export function setMarkdownAutoNumberHeadings(on: boolean): void {
+  autoNumberHeadings = on;
+}
+
+// Require ≥2 dot-joined numeric segments (`6.2`, `6.2.1`) so single-number
+// sentences ("6 个要点") and ordered-list markers (`1.`) are never touched.
+const NUMBERED_HEADING_RE = /^(\d+(?:\.\d+)+)\.?[ \t]+(\S.*?)\s*$/;
+// Lines whose text ends in sentence punctuation are prose that merely opens
+// with a decimal, not a section title — leave them alone.
+const SENTENCE_END_RE = /[。．.！？!?，,；;、]$/;
+
+function numberedSectionHeadings(source: string): string {
+  const lines = source.split('\n');
+  const out: string[] = [];
+  let inFence = false;
+  let fenceChar = '';
+  const fenceRe = /^(\s*)(```+|~~~+)/;
+  for (const line of lines) {
+    const fm = fenceRe.exec(line);
+    if (fm) {
+      if (!inFence) {
+        inFence = true;
+        fenceChar = fm[2][0];
+        out.push(line);
+        continue;
+      }
+      if (fm[2][0] === fenceChar) {
+        inFence = false;
+        out.push(line);
+        continue;
+      }
+    }
+    if (inFence) {
+      out.push(line);
+      continue;
+    }
+    const m = NUMBERED_HEADING_RE.exec(line);
+    if (m && !SENTENCE_END_RE.test(m[2])) {
+      const depth = Math.min(6, m[1].split('.').length);
+      out.push(`${'#'.repeat(depth)} ${m[1]} ${m[2]}`);
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+/**
+ * Run the source through every leniency preprocessor (inline-HTML-block
+ * unwrapping #71, malformed table-delimiter repair, list re-indent #132) that
+ * makes AI/PDF-exported Markdown render like Typora/Obsidian. Both the HTML
+ * render path (`renderMarkdown`) and the DOCX token path (`markdownToDocxBlob`
+ * via `md.parse`) must apply this identically, so it lives here as the single
+ * source of truth. The numbered-section step is gated behind its opt-in
+ * setting.
+ */
+export function preprocessMarkdown(source: string): string {
+  let s = normalizeTableDelimiters(unwrapInlineHtmlBlocks(source || ''));
+  if (autoNumberHeadings) s = numberedSectionHeadings(s);
+  return normalizeListIndent(s);
+}
+
 export function renderMarkdown(source: string, options?: { breaks?: boolean }): string {
   lastFrontMatterRaw = null;
-  const normalized = normalizeListIndent(unwrapInlineHtmlBlocks(source || ''));
+  const normalized = preprocessMarkdown(source);
   const prevBreaks = md.options.breaks;
   if (options?.breaks !== undefined) md.set({ breaks: options.breaks });
   let body = '';

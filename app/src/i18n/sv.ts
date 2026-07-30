@@ -145,6 +145,8 @@ export const sv: I18n = {
     codeBlockLineNumbersHint: 'Lägger till en 1, 2, 3…-ränna i varje inhägnat kodblock i förhandsvisningen. Ärvs av PDF/DOCX/bildexporter.',
     markdownHardBreaks: 'Rendera enkla radbrytningar som radbrytningar',
     markdownHardBreaksHint: 'Som Typora: ett Enter-tryck ger en radbrytning i förhandsvisningen och alla exporter. Av = strikt Markdown (enkla radbrytningar slås ihop till ett stycke; tom rad avgränsar).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Radbrytning',
     lineNumbers: 'Radnummer',
     livePreview: 'Liveförhandsgranskning (Markdown) — dölj markörer utanför raden, rendera rubriker, fetstil m.m.',

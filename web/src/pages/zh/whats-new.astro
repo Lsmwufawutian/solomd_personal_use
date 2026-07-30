@@ -5,13 +5,13 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.10.2';
+const VERSION = '4.11.0';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
 <Layout
-  title={`SoloMD ${VERSION} 更新 — v4.0 – v4.8 版本说明`}
-  description={`SoloMD ${VERSION} 版本说明。v4.8:图床（PicGo / SM.MS / S3 / GitHub）+ 体验修复（全选、删除进回收站、换行统一）。v4.7:Windows 编辑器换用原生 textarea 重写,中文输入法终于稳定。v4.6:知识图谱（类型化关系、保存视图、属性面板）+ tldraw 白板。v4.0:agent-native author 大版本 —— 内置 Agent 面板、定时 Recipe、Trace View、MCP Federation。`}
+  title={`SoloMD ${VERSION} 更新 — v4.0 – v4.11 版本说明`}
+  description={`SoloMD ${VERSION} 版本说明。v4.11:AI/PDF 导出的畸形表格自动修复并正常渲染,新增「编号章节自动转标题」（6.2 → h2,可选开启）,应用 / CLI / MCP 三端一致。v4.8:图床（PicGo / SM.MS / S3 / GitHub）+ 体验修复（全选、删除进回收站、换行统一）。v4.7:Windows 编辑器换用原生 textarea 重写,中文输入法终于稳定。v4.6:知识图谱（类型化关系、保存视图、属性面板）+ tldraw 白板。v4.0:agent-native author 大版本 —— 内置 Agent 面板、定时 Recipe、Trace View、MCP Federation。`}
   lang={lang}
 >
   <Header lang={lang} />
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11</span>
+          <time>2026 年 7 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11 —— 坏表格自己修好。</h2>
+        <ul>
+          <li><strong>畸形表格照样渲染。</strong>AI 导出和 PDF 转 Markdown 工具经常生成与表头对不上的分隔行——多一格 <code>|---|</code>、少一格、或夹着空单元格——整个表格就静默塌成一段 <code>| … |</code> 纯文本。SoloMD 现在像 Typora / Obsidian 一样即时修复分隔行,保留每列的对齐方式;代码块里的示例表格不受影响。</li>
+          <li><strong>编号章节可自动转标题（可选开启）。</strong>公文和报告常把章节号写成纯文本——<code>6.2 出口许可证管理目录</code>——没有 <code>#</code>。新增设置（默认关闭）按层级把这类行提升为真标题:<code>6.2</code> → h2,<code>6.2.1</code> → h3。有序列表、小数开头的句子、单个数字一律不动。</li>
+          <li><strong>headless 导出与应用同引擎。</strong>CLI（<code>solomd-export</code> 新增 <code>--number-headings</code> 参数）和 MCP <code>export_note</code> 工具（新增 <code>number_headings</code> 参数）现在与应用内预览 / DOCX 导出跑完全相同的 Markdown 预处理——一套引擎,三端输出一致。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

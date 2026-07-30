@@ -141,6 +141,9 @@ const html = computed(() => {
   // setting re-renders immediately (renderMarkdown reads the md singleton's
   // option, which isn't reactive by itself).
   void settings.markdownHardBreaks;
+  // Same reactive-dep trick for the numbered-heading toggle (preprocessMarkdown
+  // reads a module-level flag that isn't reactive on its own).
+  void settings.markdownAutoNumberHeadings;
   const source = props.source || '';
   return rewriteImageUrls(renderMarkdown(source), extractImageRoot(source), props.filePath);
 });

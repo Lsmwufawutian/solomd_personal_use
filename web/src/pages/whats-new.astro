@@ -5,13 +5,13 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.10.2';
+const VERSION = '4.11.0';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
 <Layout
-  title={`What's new in SoloMD ${VERSION} — release notes v4.0 – v4.8`}
-  description={`SoloMD ${VERSION} release notes. v4.8: image hosting (PicGo / SM.MS / S3 / GitHub) + quality-of-life fixes (select-all, trash-safe delete, unified line breaks). v4.7: Windows editor rewritten on native textareas — CJK IME finally reliable. v4.6: knowledge graph (typed relationships, saved views, properties inspector) + tldraw whiteboards. v4.0: the agent-native author release — Inline Agent Panel, Scheduled Recipes, Trace View, MCP Federation.`}
+  title={`What's new in SoloMD ${VERSION} — release notes v4.0 – v4.11`}
+  description={`SoloMD ${VERSION} release notes. v4.11: malformed tables from AI/PDF exports now auto-repair and render, plus opt-in numbered-section headings (6.2 → h2) across app, CLI and MCP. v4.8: image hosting (PicGo / SM.MS / S3 / GitHub) + quality-of-life fixes (select-all, trash-safe delete, unified line breaks). v4.7: Windows editor rewritten on native textareas — CJK IME finally reliable. v4.6: knowledge graph (typed relationships, saved views, properties inspector) + tldraw whiteboards. v4.0: the agent-native author release — Inline Agent Panel, Scheduled Recipes, Trace View, MCP Federation.`}
   lang={lang}
 >
   <Header lang={lang} />
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11</span>
+          <time>July 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11 — broken tables fix themselves.</h2>
+        <ul>
+          <li><strong>Malformed tables render anyway.</strong> AI exports and PDF-to-Markdown tools often emit a delimiter row that doesn't match the header (an extra <code>|---|</code> cell, a missing one, an empty cell) — and the whole table silently collapsed into literal <code>| … |</code> text. SoloMD now repairs the delimiter row on the fly, like Typora and Obsidian, keeping each column's alignment. Code-block samples are left untouched.</li>
+          <li><strong>Numbered sections can become headings (opt-in).</strong> Reports often number sections as plain text — <code>6.2 Export licensing</code> — with no <code>#</code>. A new setting (off by default) promotes such lines to real headings by depth: <code>6.2</code> → h2, <code>6.2.1</code> → h3. Ordered lists, decimal sentences and single numbers are never touched.</li>
+          <li><strong>Headless export matches the app.</strong> The CLI (<code>solomd-export</code>, new <code>--number-headings</code> flag) and the MCP <code>export_note</code> tool (new <code>number_headings</code> arg) now run the exact same Markdown preprocessing as the in-app preview and DOCX export — one engine, identical output everywhere.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

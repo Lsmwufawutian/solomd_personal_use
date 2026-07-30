@@ -145,6 +145,8 @@ export const tr: I18n = {
     codeBlockLineNumbersHint: 'Önizlemedeki her çitli kod bloğuna 1, 2, 3… sütunu ekler. PDF/DOCX/görüntü dışa aktarımları tarafından devralınır.',
     markdownHardBreaks: 'Tek satır sonlarını satır sonu olarak göster',
     markdownHardBreaksHint: 'Typora gibi: bir kez Enter, önizlemede ve tüm dışa aktarmalarda satır sonu oluşturur. Kapalı = katı Markdown (tek satır sonları aynı paragrafta birleşir; boş satır ayırır).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Sözcük Kaydırma',
     lineNumbers: 'Satır Numaraları',
     livePreview: 'Canlı Önizleme (Markdown) — etkin satır dışında işaretleri gizle, başlık, kalın vb. biçimlendir',

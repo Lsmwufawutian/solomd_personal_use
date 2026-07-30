@@ -147,6 +147,8 @@ export const pt: I18n = {
     codeBlockLineNumbersHint: 'Adiciona uma calha 1, 2, 3… a cada bloco de código cercado na pré-visualização. Herdado por exportações PDF/DOCX/imagem.',
     markdownHardBreaks: 'Renderizar quebras de linha simples como quebras',
     markdownHardBreaksHint: 'Como o Typora: um único Enter cria uma quebra de linha na pré-visualização e em todas as exportações. Desligado = Markdown estrito (quebras simples se fundem no parágrafo; use uma linha em branco para separar).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Quebra de linha',
     lineNumbers: 'Números de linha',
     livePreview: 'Pré-visualização ao vivo (Markdown) — esconder marcadores fora da linha, renderizar títulos, negrito etc.',

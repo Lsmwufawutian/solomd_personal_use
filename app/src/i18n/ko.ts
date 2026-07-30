@@ -145,6 +145,8 @@ export const ko: I18n = {
     codeBlockLineNumbersHint: '미리보기의 각 펜스 코드 블록에 1, 2, 3… 줄 번호 거터를 추가. PDF / DOCX / 이미지 내보내기에도 적용.',
     markdownHardBreaks: '단일 줄바꿈을 줄바꿈으로 렌더링',
     markdownHardBreaksHint: 'Typora와 동일: Enter 한 번으로 미리보기와 모든 내보내기에서 줄이 바뀝니다. 끄면 = 엄격한 Markdown(단일 줄바꿈은 같은 문단으로 합쳐지며 빈 줄로 문단을 구분).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: '자동 줄바꿈',
     lineNumbers: '행 번호',
     livePreview: '라이브 미리 보기(Markdown) — 행 외 마커는 숨기고 제목·굵게 등을 렌더링',

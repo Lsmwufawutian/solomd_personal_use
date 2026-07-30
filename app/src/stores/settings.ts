@@ -253,6 +253,11 @@ interface Settings {
   // paragraphs render identically either way. OFF = strict CommonMark
   // soft-break (newline collapses to a space).
   markdownHardBreaks: boolean;
+  // Promote plain numbered-section lines (`6.2 出口许可证管理目录`,
+  // `6.2.1 …`) to headings whose level tracks the numbering depth. Off by
+  // default — the promotion is heuristic (a line opening with a decimal like
+  // `3.14 …` also matches), so CJK-report users opt in.
+  markdownAutoNumberHeadings: boolean;
   // v4.3.0: user-customisable order of the right-sidebar panes. Each entry
   // is a pane id (search / outline / backlinks / tags / history / agent).
   // Default matches the pre-v4.3.0 hardcoded order. Panes not in the list
@@ -508,6 +513,7 @@ function defaults(): Settings {
     globalZoom: 1,
     codeBlockLineNumbers: false,
     markdownHardBreaks: true,
+    markdownAutoNumberHeadings: false,
     rsPaneOrder: ['search', 'outline', 'backlinks', 'relationships', 'tags', 'neighborhood', 'types', 'history', 'inspector', 'agent'],
     previewFontSize: 15,
     attachmentMode: 'shared',
@@ -1087,6 +1093,10 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleMarkdownHardBreaks() {
       this.markdownHardBreaks = !this.markdownHardBreaks;
+      this.persist();
+    },
+    toggleMarkdownAutoNumberHeadings() {
+      this.markdownAutoNumberHeadings = !this.markdownAutoNumberHeadings;
       this.persist();
     },
     /** v4.3.0 issue #57b — reorder the right sidebar by moving a pane id to

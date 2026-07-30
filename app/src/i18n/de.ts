@@ -145,6 +145,8 @@ export const de: I18n = {
     codeBlockLineNumbersHint: 'Fügt jedem eingezäunten Code-Block in der Vorschau eine 1, 2, 3…-Spalte hinzu. Wird in PDF/DOCX/Bild-Exporte übernommen.',
     markdownHardBreaks: 'Einzelne Zeilenumbrüche als Umbruch rendern',
     markdownHardBreaksHint: 'Wie Typora: Einmal Enter erzeugt in Vorschau und allen Exporten einen Zeilenumbruch. Aus = striktes Markdown (einzelne Umbrüche werden zu einem Absatz zusammengefasst; Leerzeile trennt Absätze).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Zeilenumbruch',
     lineNumbers: 'Zeilennummern',
     livePreview: 'Live-Vorschau (Markdown) — Marker außerhalb der Zeile ausblenden, Überschriften/Fett rendern',

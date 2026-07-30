@@ -24,7 +24,7 @@ import {
   WidthType,
 } from 'docx';
 import { invoke } from '@tauri-apps/api/core';
-import { md, extractImageRoot } from './markdown';
+import { md, extractImageRoot, preprocessMarkdown } from './markdown';
 import { resolveImagePath } from './image-resolve';
 import type Token from 'markdown-it/lib/token.mjs';
 
@@ -579,7 +579,10 @@ function buildTable(inner: Token[]): Table | null {
 
 export async function markdownToDocxBlob(source: string, _title = 'Document', filePath?: string): Promise<Blob> {
   imageCache.clear();
-  const tokens = md.parse(source ?? '', {});
+  // Apply the same leniency preprocessors the HTML render path uses (malformed
+  // table delimiters, list re-indent, inline-HTML blocks) so DOCX export
+  // doesn't silently drop tables/lists the preview shows correctly.
+  const tokens = md.parse(preprocessMarkdown(source ?? ''), {});
   const imageRoot = extractImageRoot(source || '');
   const blocks = await buildBody(tokens, imageRoot, filePath);
   if (blocks.length === 0) blocks.push(new Paragraph({ text: '' }));

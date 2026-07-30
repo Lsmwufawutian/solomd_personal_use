@@ -317,6 +317,12 @@ pub struct ExportNoteArgs {
     /// Workspace selector — alias or absolute path. Default = first workspace.
     #[serde(default)]
     pub workspace: Option<String>,
+    /// v4.11 — promote plain-text numbered section lines (`6.2 标题`,
+    /// `6.2.1 标题`) to real headings during export, mirroring the GUI's
+    /// opt-in «编号章节自动转标题» setting and the CLI's
+    /// `--number-headings` flag. Defaults to false.
+    #[serde(default)]
+    pub number_headings: Option<bool>,
 }
 
 /// v4.0 Pillar 3 — args for `read_agent_trace`.
@@ -779,7 +785,7 @@ impl SoloMdServer {
     /// workspace IS gated by `allow_write` for safety.
     #[tool(
         name = "export_note",
-        description = "Export a Markdown note to html / md / txt / docx. Engine-parity with the SoloMD GUI export. Args: `path` (workspace-relative), `format` (default html), optional `output_path` (default: sibling file next to `path` with format-appropriate extension). Returns the absolute output path. Requires Node.js + `pnpm install` in the SoloMD repo's app/ directory."
+        description = "Export a Markdown note to html / md / txt / docx. Engine-parity with the SoloMD GUI export. Args: `path` (workspace-relative), `format` (default html), optional `output_path` (default: sibling file next to `path` with format-appropriate extension), optional `number_headings` (promote plain-text numbered sections like 6.2 / 6.2.1 to headings, default false). Returns the absolute output path. Requires Node.js + `pnpm install` in the SoloMD repo's app/ directory."
     )]
     pub async fn export_note(
         &self,
@@ -836,11 +842,15 @@ impl SoloMdServer {
         })?;
         let script_dir = script.parent().unwrap_or_else(|| Path::new(".")).to_path_buf();
 
-        let out = AsyncCommand::new("node")
-            .arg(&script)
+        let mut cmd = AsyncCommand::new("node");
+        cmd.arg(&script)
             .arg(&input_path)
             .arg("--format").arg(&fmt)
-            .arg("--output").arg(&output_path)
+            .arg("--output").arg(&output_path);
+        if args.0.number_headings.unwrap_or(false) {
+            cmd.arg("--number-headings");
+        }
+        let out = cmd
             .current_dir(&script_dir)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())

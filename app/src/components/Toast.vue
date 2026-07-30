@@ -11,6 +11,11 @@ const icons: Record<string, string> = {
 };
 
 function onToastClick(t: Toast) {
+  if (t.onClick) {
+    t.onClick();
+    toasts.dismiss(t.id);
+    return;
+  }
   navigator.clipboard.writeText(t.message).catch(() => {});
 }
 </script>

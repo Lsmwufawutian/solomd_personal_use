@@ -486,6 +486,18 @@ function onSelectPdfFont(v: string) {
           <label>
             <input
               type="checkbox"
+              :checked="settings.markdownAutoNumberHeadings"
+              @change="settings.toggleMarkdownAutoNumberHeadings()"
+            />
+            {{ t('settings.markdownAutoNumberHeadings') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.markdownAutoNumberHeadingsHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input
+              type="checkbox"
               :checked="settings.plantumlEnabled"
               @change="settings.togglePlantuml()"
             />

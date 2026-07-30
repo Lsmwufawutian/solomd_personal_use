@@ -5,7 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { openPath } from '@tauri-apps/plugin-opener';
-import { setMarkdownHardBreaks } from './lib/markdown';
+import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings } from './lib/markdown';
 import Toolbar from './components/Toolbar.vue';
 import TelemetryBanner from './components/TelemetryBanner.vue';
 import TileRoot from './components/TileRoot.vue';
@@ -509,6 +509,12 @@ watchEffect(() => {
 // the setting (runs once on hydration and again on every toggle).
 watchEffect(() => {
   setMarkdownHardBreaks(settings.markdownHardBreaks);
+});
+
+// Keep the numbered-section auto-heading preprocessor in lockstep with its
+// opt-in setting (same singleton-flag pattern as breaks above).
+watchEffect(() => {
+  setMarkdownAutoNumberHeadings(settings.markdownAutoNumberHeadings);
 });
 
 // #133 — the rendered preview previously ignored the editor `fontFamily`
@@ -1086,8 +1092,14 @@ onMounted(async () => {
         const toastsStore = (await import('./stores/toasts')).useToastsStore();
         const { useI18n } = await import('./i18n');
         const { t: tr } = useI18n();
-        toastsStore.success(tr('settings.updateAvailable', { version: result.latest || '' }), 8000);
-        setTimeout(() => openReleaseUrl(result.url), 3000);
+        // #171 — no auto-opening the browser (it yanks the user out of
+        // whatever they're writing). The toast lingers; clicking it opens
+        // the download page.
+        toastsStore.success(
+          tr('settings.updateAvailable', { version: result.latest || '' }),
+          12000,
+          () => { void openReleaseUrl(result.url); },
+        );
       }
     } catch { /* silent */ }
   }

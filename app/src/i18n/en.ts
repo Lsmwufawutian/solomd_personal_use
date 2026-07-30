@@ -143,6 +143,8 @@ export const en = {
     codeBlockLineNumbersHint: 'Adds a 1, 2, 3… gutter to each fenced code block in the preview. Inherited by PDF / DOCX / image exports.',
     markdownHardBreaks: 'Render single newlines as line breaks',
     markdownHardBreaksHint: 'Typora-like: pressing Enter once starts a new line in the preview and all exports. Off = strict Markdown (single newlines collapse into one paragraph; use a blank line to separate).',
+    markdownAutoNumberHeadings: 'Treat numbered sections as headings',
+    markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Word Wrap',
     lineNumbers: 'Line Numbers',
     livePreview: 'Live Preview (Markdown) — hide markers off-line, render headings, bold etc.',
