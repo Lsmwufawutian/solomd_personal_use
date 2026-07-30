@@ -696,6 +696,8 @@ export const ja: I18n = {
     provider: 'Provider',
     model: 'モデル',
     baseUrl: 'Base URL（任意）',
+    baseUrlRequired: 'Base URL（必須）',
+    customHint: 'OpenAI 互換の任意のエンドポイント。Base URL とモデル名を入力してください。',
     apiKey: 'API キー',
     saveKey: '保存して検証',
     clearKey: 'クリア',

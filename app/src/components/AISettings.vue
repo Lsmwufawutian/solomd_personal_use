@@ -105,6 +105,7 @@ const modelChoices = computed<string[]>(() => {
 });
 
 const needsKey = computed(() => props.provider !== 'ollama');
+const isCustom = computed(() => props.provider === 'custom');
 
 // ---------------------------------------------------------------------------
 // Ollama detection cache (v4.0 Pillar 5)
@@ -513,7 +514,7 @@ function onProviderChange(ev: Event): void {
           id="ai-model"
           :value="model"
           class="ai-settings__input"
-          :placeholder="currentProviderConfig?.defaultModel"
+          :placeholder="isCustom ? 'gpt-4o, deepseek-chat, qwen-plus …' : currentProviderConfig?.defaultModel"
           :list="`ai-model-options-${provider}`"
           autocomplete="off"
           spellcheck="false"
@@ -531,14 +532,19 @@ function onProviderChange(ev: Event): void {
           {{ t('ai.getKey') }} ↗
         </a>
       </p>
+      <p v-if="isCustom" class="ai-settings__hint">
+        {{ t('ai.customHint') }}
+      </p>
 
       <div class="ai-settings__row">
-        <label class="ai-settings__label" for="ai-baseurl">{{ t('ai.baseUrl') }}</label>
+        <label class="ai-settings__label" for="ai-baseurl">
+          {{ isCustom ? t('ai.baseUrlRequired') : t('ai.baseUrl') }}
+        </label>
         <input
           id="ai-baseurl"
           :value="baseUrl"
           class="ai-settings__input"
-          :placeholder="currentProviderConfig?.defaultBaseUrl"
+          :placeholder="isCustom ? 'https://your-api-host.com/v1' : currentProviderConfig?.defaultBaseUrl"
           @input="emit('update:baseUrl', ($event.target as HTMLInputElement).value)"
         />
       </div>
@@ -559,7 +565,7 @@ function onProviderChange(ev: Event): void {
             <button
               type="button"
               class="ai-settings__btn ai-settings__btn--primary"
-              :disabled="saving || !keyInput.trim()"
+              :disabled="saving || !keyInput.trim() || (isCustom && !baseUrl.trim())"
               @click="saveKey"
             >
               {{ t('ai.saveKey') }}
@@ -567,7 +573,7 @@ function onProviderChange(ev: Event): void {
             <button
               type="button"
               class="ai-settings__btn"
-              :disabled="saving || (!hasKey[provider] && provider !== 'ollama')"
+              :disabled="saving || (!hasKey[provider] && provider !== 'ollama') || (isCustom && !baseUrl.trim())"
               @click="verifyExisting"
             >
               {{ t('ai.testConnection') }}

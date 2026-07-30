@@ -699,6 +699,8 @@ export const tr: I18n = {
     provider: 'Sağlayıcı',
     model: 'Model',
     baseUrl: 'Temel URL (isteğe bağlı)',
+    baseUrlRequired: 'Temel URL (zorunlu)',
+    customHint: 'Herhangi bir OpenAI uyumlu uç nokta. Temel URL ve Model alanlarını doldurun.',
     apiKey: 'API anahtarı',
     saveKey: 'Kaydet ve doğrula',
     clearKey: 'Temizle',

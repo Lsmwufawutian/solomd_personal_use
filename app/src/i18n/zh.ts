@@ -693,6 +693,8 @@ export const zh: I18n = {
     provider: '提供商',
     model: '模型',
     baseUrl: '接口地址（可选）',
+    baseUrlRequired: '接口地址（必填）',
+    customHint: '任何 OpenAI 兼容的接口。请填写下方的接口地址和模型名称。',
     apiKey: 'API 密钥',
     saveKey: '保存并验证',
     clearKey: '清除',

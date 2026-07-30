@@ -698,6 +698,8 @@ export const pt: I18n = {
     provider: 'Provider',
     model: 'Modelo',
     baseUrl: 'Base URL (opcional)',
+    baseUrlRequired: 'Base URL (obrigatório)',
+    customHint: 'Qualquer endpoint compatível com OpenAI. Preencha a Base URL e o Modelo.',
     apiKey: 'Chave API',
     saveKey: 'Salvar e verificar',
     clearKey: 'Limpar',

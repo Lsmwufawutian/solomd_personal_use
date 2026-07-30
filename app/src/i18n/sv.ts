@@ -699,6 +699,8 @@ export const sv: I18n = {
     provider: 'Leverantör',
     model: 'Modell',
     baseUrl: 'Bas-URL (valfritt)',
+    baseUrlRequired: 'Bas-URL (obligatoriskt)',
+    customHint: 'Valfri OpenAI-kompatibel endpoint. Fyll i Bas-URL och Modell.',
     apiKey: 'API-nyckel',
     saveKey: 'Spara och verifiera',
     clearKey: 'Rensa',

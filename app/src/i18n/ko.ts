@@ -696,6 +696,8 @@ export const ko: I18n = {
     provider: 'Provider',
     model: '모델',
     baseUrl: 'Base URL(선택)',
+    baseUrlRequired: 'Base URL(필수)',
+    customHint: 'OpenAI 호환 엔드포인트. Base URL과 모델 이름을 입력하세요.',
     apiKey: 'API 키',
     saveKey: '저장 및 검증',
     clearKey: '지우기',

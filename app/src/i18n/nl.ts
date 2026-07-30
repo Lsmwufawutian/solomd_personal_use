@@ -699,6 +699,8 @@ export const nl: I18n = {
     provider: 'Aanbieder',
     model: 'Model',
     baseUrl: 'Base URL (optioneel)',
+    baseUrlRequired: 'Base URL (vereist)',
+    customHint: 'Elke OpenAI-compatibele endpoint. Vul de Base URL en het Model in.',
     apiKey: 'API-sleutel',
     saveKey: 'Opslaan en verifiëren',
     clearKey: 'Wissen',

@@ -699,6 +699,8 @@ export const uk: I18n = {
     provider: 'Провайдер',
     model: 'Модель',
     baseUrl: 'Базовий URL (необов\'язково)',
+    baseUrlRequired: 'Базовий URL (обов\'язково)',
+    customHint: 'Будь-яка сумісна з OpenAI кінцева точка. Заповніть Базовий URL та Модель.',
     apiKey: 'API-ключ',
     saveKey: 'Зберегти й перевірити',
     clearKey: 'Очистити',

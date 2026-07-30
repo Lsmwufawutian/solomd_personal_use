@@ -696,6 +696,8 @@ export const en = {
     provider: 'Provider',
     model: 'Model',
     baseUrl: 'Base URL (optional)',
+    baseUrlRequired: 'Base URL (required)',
+    customHint: 'Any OpenAI-compatible endpoint. Fill in the Base URL and Model below.',
     apiKey: 'API key',
     saveKey: 'Save & verify',
     clearKey: 'Clear',

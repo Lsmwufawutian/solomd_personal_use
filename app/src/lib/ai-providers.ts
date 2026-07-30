@@ -35,7 +35,9 @@ export type ProviderId =
   // Aggregator
   | 'openrouter'
   // Local
-  | 'ollama';
+  | 'ollama'
+  // Generic
+  | 'custom';
 
 /** Wire format the Rust proxy uses to talk to the provider. */
 export type ApiFormat = 'openai' | 'anthropic' | 'ollama';
@@ -222,6 +224,15 @@ export const PROVIDERS: ProviderConfig[] = [
       { id: 'quick', model: 'qwen2.5:1.5b', labelKey: 'ai.ollama.preset.quick' },
       { id: 'cjk', model: 'qwen2.5:14b', labelKey: 'ai.ollama.preset.cjk' },
     ],
+  },
+  // ---- Generic OpenAI-compatible ----------------------------------------
+  {
+    id: 'custom',
+    label: '自定义 OpenAI 兼容 / Custom OpenAI Compatible',
+    apiFormat: 'openai',
+    defaultModel: '',
+    // No default — user must fill in their own endpoint.
+    modelHint: '',
   },
 ];
 
