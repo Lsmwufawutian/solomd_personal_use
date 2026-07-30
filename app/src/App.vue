@@ -1092,8 +1092,14 @@ onMounted(async () => {
         const toastsStore = (await import('./stores/toasts')).useToastsStore();
         const { useI18n } = await import('./i18n');
         const { t: tr } = useI18n();
-        toastsStore.success(tr('settings.updateAvailable', { version: result.latest || '' }), 8000);
-        setTimeout(() => openReleaseUrl(result.url), 3000);
+        // #171 — no auto-opening the browser (it yanks the user out of
+        // whatever they're writing). The toast lingers; clicking it opens
+        // the download page.
+        toastsStore.success(
+          tr('settings.updateAvailable', { version: result.latest || '' }),
+          12000,
+          () => { void openReleaseUrl(result.url); },
+        );
       }
     } catch { /* silent */ }
   }
